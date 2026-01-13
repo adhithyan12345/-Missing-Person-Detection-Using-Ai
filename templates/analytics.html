@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" data-aos="fade-up">
+
+    
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+        <p class="mt-2 text-gray-600">Real-time insights into missing person cases and system performance.</p>
+    </div>
+
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-search text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Total Reports</p>
+                    <p class="text-2xl font-bold text-gray-900" id="totalCases">0</p>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100 text-red-600">
+                    <i class="fas fa-exclamation-triangle text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Missing</p>
+                    <p class="text-2xl font-bold text-gray-900" id="activeCases">0</p>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-check-circle text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Found</p>
+                    <p class="text-2xl font-bold text-gray-900" id="foundCases">0</p>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i class="fas fa-chart-line text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">This Month</p>
+                    <p class="text-2xl font-bold text-gray-900" id="thisMonthCases">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Case Status Distribution</h3>
+            <div class="relative h-64">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Age Demographics (Missing)</h3>
+            <div class="relative h-64">
+                <canvas id="ageChart"></canvas>
+            </div>
+        </div>
+
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Reports Timeline (Last 6 Months)</h3>
+            <div class="relative h-64">
+                <canvas id="timelineChart"></canvas>
+            </div>
+        </div>
+
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Gender Distribution (Missing)</h3>
+            <div class="relative h-64">
+                <canvas id="genderChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Data from Backend
+        const statusData = {{ status_data | tojson
+    }};
+    const genderData = {{ gender_data | tojson }};
+    const ageGroups = {{ age_groups | tojson }};
+    const timelineData = {{ timeline_data | tojson }};
+
+    // --- Process Status Data ---
+    let missingCount = 0;
+    let foundCount = 0;
+    let totalCount = 0;
+
+    const statusLabels = [];
+    const statusCounts = [];
+    const statusColors = [];
+
+    statusData.forEach(item => {
+        statusLabels.push(item.status);
+        statusCounts.push(item.count);
+        totalCount += item.count;
+        if (item.status === 'Missing') {
+            missingCount = item.count;
+            statusColors.push('#EF4444'); // Red
+        } else if (item.status === 'Found') {
+            foundCount = item.count;
+            statusColors.push('#10B981'); // Green
+        } else {
+            statusColors.push('#6B7280'); // Gray
+        }
+    });
+
+    // Update Overview Cards
+    document.getElementById('totalCases').innerText = totalCount;
+    document.getElementById('activeCases').innerText = missingCount;
+    document.getElementById('foundCases').innerText = foundCount;
+
+    // --- Status Chart (Doughnut) ---
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusCounts,
+                backgroundColor: statusColors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // --- Age Chart (Bar) ---
+    new Chart(document.getElementById('ageChart'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(ageGroups),
+            datasets: [{
+                label: 'Number of Cases',
+                data: Object.values(ageGroups),
+                backgroundColor: '#3B82F6',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+
+    // --- Timeline Chart (Line) ---
+    const timelineLabels = timelineData.map(d => d.month);
+    const timelineCounts = timelineData.map(d => d.count);
+
+    // Update This Month Card (Check if last item matches current month)
+    if (timelineData.length > 0) {
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        const lastData = timelineData[timelineData.length - 1];
+        if (lastData.month === currentMonth) {
+            document.getElementById('thisMonthCases').innerText = lastData.count;
+        }
+    }
+
+    new Chart(document.getElementById('timelineChart'), {
+        type: 'line',
+        data: {
+            labels: timelineLabels,
+            datasets: [{
+                label: 'Reports',
+                data: timelineCounts,
+                borderColor: '#8B5CF6',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+
+    // --- Gender Chart (Pie) ---
+    const genderLabels = genderData.map(d => d.gender);
+    const genderCounts = genderData.map(d => d.count);
+
+    const genderColors = genderLabels.map(g => {
+        if (g === 'Male') return '#3B82F6';
+        if (g === 'Female') return '#EC4899';
+        return '#9CA3AF';
+    });
+
+    new Chart(document.getElementById('genderChart'), {
+        type: 'pie',
+        data: {
+            labels: genderLabels,
+            datasets: [{
+                data: genderCounts,
+                backgroundColor: genderColors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    });
+</script>
+{% endblock %}

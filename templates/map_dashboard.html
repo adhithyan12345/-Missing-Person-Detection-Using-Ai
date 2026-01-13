@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --neon-cyan: #00f3ff;
+        --neon-purple: #bd00ff;
+        --dark-bg: #0a0a12;
+        --panel-bg: rgba(10, 10, 18, 0.85);
+    }
+
+    /* Map Dark Mode Filter */
+    .map-dark-mode .leaflet-tile {
+        filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--dark-bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--neon-cyan);
+    }
+
+    /* Cyber Panel Styling */
+    .cyber-panel {
+        background: var(--panel-bg);
+        backdrop-filter: blur(12px);
+        border-right: 1px solid rgba(0, 243, 255, 0.2);
+        box-shadow: 5px 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .cyber-stat-card {
+        background: rgba(0, 243, 255, 0.05);
+        border: 1px solid rgba(0, 243, 255, 0.2);
+        clip-path: polygon(0 0, 100% 0, 100% 85%, 90% 100%, 0 100%);
+    }
+
+    .cyber-border-bottom {
+        border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+        box-shadow: 0 4px 20px -10px var(--neon-cyan);
+    }
+
+    .animate-pulse-slow {
+        animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes scanline {
+        0% {
+            transform: translateY(-100%);
+        }
+
+        100% {
+            transform: translateY(100%);
+        }
+    }
+
+    .scan-overlay {
+        background: linear-gradient(to bottom, transparent, rgba(0, 243, 255, 0.1), transparent);
+        height: 20%;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        animation: scanline 5s linear infinite;
+        z-index: 500;
+    }
+</style>
+
+<div class="h-[calc(100vh-64px)] flex relative overflow-hidden bg-gray-900">
+
+    
+    <div class="w-80 cyber-panel flex flex-col z-20 absolute h-full transition-transform duration-300 transform -translate-x-full md:translate-x-0 md:relative"
+        id="sidebar">
+        
+        <div class="p-6 cyber-border-bottom relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-2 opacity-20">
+                <i class="fas fa-radar text-4xl text-cyan-400 animate-spin-slow"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-white tracking-wider flex items-center gap-3">
+                <i class="fas fa-search-location text-cyan-400"></i>
+                <span>TRACE<span class="text-cyan-400">CASE</span></span>
+            </h1>
+            <p class="text-xs text-cyan-500/70 mt-1 font-mono tracking-widest">GLOBAL SURVEILLANCE UNIT</p>
+        </div>
+
+        
+        <div class="p-6 space-y-4 flex-grow overflow-y-auto">
+            <div class="cyber-stat-card p-4 relative group hover:bg-cyan-900/10 transition-colors">
+                <div class="text-xs text-cyan-400 font-mono mb-1 uppercase">Active Cases</div>
+                <div class="text-3xl font-bold text-white" id="stat-active">--</div>
+                <div class="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            </div>
+
+            <div class="cyber-stat-card p-4 relative group hover:bg-cyan-900/10 transition-colors">
+                <div class="text-xs text-cyan-400 font-mono mb-1 uppercase">Detections (24h)</div>
+                <div class="text-3xl font-bold text-white" id="stat-detections">--</div>
+                <div class="absolute top-2 right-2 w-2 h-2 bg-yellow-500 rounded-full animate-pulse-slow"></div>
+            </div>
+
+            
+            <div class="mt-8">
+                <h3 class="text-xs text-gray-400 uppercase font-mono mb-3 border-b border-gray-700 pb-2">Data Layers
+                </h3>
+                <div class="space-y-2">
+                    <label class="flex items-center space-x-3 text-sm text-gray-300 cursor-pointer hover:text-white">
+                        <input type="checkbox" checked
+                            class="form-checkbox bg-transparent border-cyan-500 text-cyan-500 rounded focus:ring-0 focus:ring-offset-0"
+                            onchange="toggleLayer('missing')">
+                        <span>Missing Persons</span>
+                    </label>
+                    <label class="flex items-center space-x-3 text-sm text-gray-300 cursor-pointer hover:text-white">
+                        <input type="checkbox" checked
+                            class="form-checkbox bg-transparent border-cyan-500 text-cyan-500 rounded focus:ring-0 focus:ring-offset-0"
+                            onchange="toggleLayer('detections')">
+                        <span>Live Detections</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="p-4 border-t border-cyan-500/20 bg-black/40">
+            <div class="flex items-center justify-between text-xs font-mono">
+                <span class="text-gray-500">SERVER_STATUS</span>
+                <span class="text-green-500 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span> CONNECTED
+                </span>
+            </div>
+            <div class="mt-2 h-1 bg-gray-800 rounded-full overflow-hidden">
+                <div class="h-full bg-cyan-500 w-2/3 animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="flex-grow relative z-0 bg-gray-900">
+        <div id="map" class="w-full h-full map-dark-mode"></div>
+        <div class="scan-overlay"></div>
+
+        
+        <button
+            class="md:hidden absolute top-4 left-4 z-[400] bg-black/80 text-cyan-400 p-2 rounded border border-cyan-500/30"
+            onclick="document.getElementById('sidebar').classList.toggle('-translate-x-full')">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        
+        <div
+            class="absolute bottom-6 right-6 z-[400] bg-black/80 backdrop-blur border border-cyan-500/20 p-4 rounded-lg shadow-2xl">
+            <h4 class="text-xs text-gray-400 uppercase mb-2 font-bold">Legend</h4>
+            <div class="space-y-2 text-xs">
+                <div class="flex items-center gap-2 text-gray-300">
+                    <span class="w-3 h-3 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></span> Missing
+                </div>
+                <div class="flex items-center gap-2 text-gray-300">
+                    <span class="w-3 h-3 rounded-full bg-green-500 shadow-lg shadow-green-500/50"></span> Found
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+    // Initialize Map with Dark styling logic
+    var map = L.map('map', {
+        zoomControl: false,
+        attributionControl: false
+    }).setView([20.5937, 78.9629], 5);
+
+    // Custom Zoom to fit theme
+    L.control.zoom({
+        position: 'topright'
+    }).addTo(map);
+
+    L.control.attribution({
+        position: 'bottomright',
+        prefix: false
+    }).addAttribution('&copy; OpenStreetMap | TraceCase AI').addTo(map);
+
+    // Add OpenStreetMap Tile Layer (Dark Mode handled by CSS)
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map);
+
+    // Custom Icons (Neon Style)
+    var createCustomIcon = (color) => {
+        return L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 10px ${color}, 0 0 20px ${color}; border: 2px solid white;"></div>`,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6],
+            popupAnchor: [0, -10]
+        });
+    };
+
+    var missingLayer = L.layerGroup().addTo(map);
+    var detectionLayer = L.layerGroup().addTo(map);
+
+    // Fetch Data
+    fetch('/api/map_data')
+        .then(response => response.json())
+        .then(data => {
+            // Update Stats
+            document.getElementById('stat-active').innerText = data.persons.length;
+            document.getElementById('stat-detections').innerText = data.detections.length;
+
+            // Plot Missing Persons
+            data.persons.forEach(person => {
+                var lat = parseFloat(person.latitude);
+                var lng = parseFloat(person.longitude);
+
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    var marker = L.marker([lat, lng], { icon: createCustomIcon('#ef4444') }); // Red
+
+                    var popupContent = `
+                        <div class="text-center p-2 min-w-[150px]">
+                            <img src="/static/uploads/${person.photo_path}" class="w-16 h-16 object-cover rounded-full mx-auto mb-2 border-2 border-red-500">
+                            <h3 class="font-bold text-sm text-gray-900">${person.full_name}</h3>
+                            <span class="inline-block px-2 py-0.5 bg-red-100 text-red-800 text-[10px] uppercase font-bold rounded mt-1">${person.status}</span>
+                            <br>
+                            <a href="/case_status/${person.id}" class="inline-block mt-2 text-indigo-600 hover:text-indigo-800 text-xs font-bold">VIEW CASE ></a>
+                        </div>
+                    `;
+                    marker.bindPopup(popupContent);
+                    missingLayer.addLayer(marker);
+                }
+            });
+
+            // Plot Detections
+            data.detections.forEach(det => {
+                var lat = parseFloat(det.latitude);
+                var lng = parseFloat(det.longitude);
+
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    var marker = L.marker([lat, lng], { icon: createCustomIcon('#22c55e') }); // Green
+                    marker.bindPopup(`
+                        <div class="text-center p-2">
+                            <h3 class="font-bold text-sm text-gray-900 text-green-600">SIGNAL DETECTED</h3>
+                            <p class="text-xs font-bold">${det.full_name}</p>
+                            <p class="text-[10px] text-gray-500 font-mono mt-1">${new Date(det.timestamp).toLocaleString()}</p>
+                        </div>
+                    `);
+                    detectionLayer.addLayer(marker);
+                }
+            });
+        })
+        .catch(error => console.error('Error loading map data:', error));
+
+    function toggleLayer(type) {
+        if (type === 'missing') {
+            if (map.hasLayer(missingLayer)) {
+                map.removeLayer(missingLayer);
+            } else {
+                map.addLayer(missingLayer);
+            }
+        } else if (type === 'detections') {
+            if (map.hasLayer(detectionLayer)) {
+                map.removeLayer(detectionLayer);
+            } else {
+                map.addLayer(detectionLayer);
+            }
+        }
+    }
+
+</script>
+{% endblock %}

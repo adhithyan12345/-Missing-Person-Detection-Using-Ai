@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .glass-morphism {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+
+    .shimmer-bg {
+        background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+        background-size: 400% 400%;
+        animation: gradient 15s ease infinite;
+    }
+
+    @keyframes gradient {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    .input-focus-ring:focus-within {
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.5);
+        border-color: #6366f1;
+    }
+</style>
+
+<div
+    class="min-h-screen relative overflow-hidden shimmer-bg flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div
+            class="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob">
+        </div>
+        <div
+            class="absolute top-1/3 right-1/4 w-96 h-96 bg-yellow-600 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000">
+        </div>
+        <div
+            class="absolute -bottom-32 left-1/2 w-96 h-96 bg-pink-600 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000">
+        </div>
+    </div>
+
+    <div class="max-w-xl w-full relative z-10">
+        <div class="glass-morphism rounded-3xl p-8 md:p-12 text-center" data-aos="zoom-in-up" data-aos-duration="1000">
+            <div
+                class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 text-white mb-8 shadow-lg ring-1 ring-white/50">
+                <i class="fas fa-search-location text-3xl"></i>
+            </div>
+
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+                Trace Case
+            </h1>
+            <p class="text-lg text-white/90 mb-10 max-w-md mx-auto leading-relaxed">
+                Stay updated. Enter your Ticket ID to check the real-time status of your missing person report.
+            </p>
+
+            <form action="{{ url_for('track') }}" method="POST" class="space-y-6 text-left">
+                <div>
+                    <label for="ticket_id" class="block text-sm font-medium text-white/80 mb-2 ml-1">Ticket ID</label>
+                    <div class="relative group input-focus-ring rounded-2xl transition-all duration-300">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i
+                                class="fas fa-ticket-alt text-white/60 group-focus-within:text-white transition-colors"></i>
+                        </div>
+                        <input type="text" name="ticket_id" id="ticket_id" required placeholder="e.g. MP-20231215-ABCD"
+                            class="block w-full pl-12 pr-4 py-4 bg-white/10 border border-white/20 rounded-2xl text-white placeholder-white/50 focus:outline-none focus:bg-white/20 transition-all font-mono tracking-wider text-lg">
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="w-full flex justify-center items-center py-4 px-6 border border-transparent text-lg font-bold rounded-2xl text-indigo-900 bg-white hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-purple-900 focus:ring-white transform transition-all hover:scale-[1.02] hover:shadow-2xl shadow-lg">
+                    <span>Track Status</span>
+                    <i class="fas fa-arrow-right ml-2 bg-indigo-100 rounded-full p-1 text-xs"></i>
+                </button>
+            </form>
+
+            <div class="mt-8 pt-6 border-t border-white/10 grid grid-cols-3 gap-4 text-center">
+                <div class="p-2 rounded-xl hover:bg-white/5 transition-colors">
+                    <div class="text-2xl mb-1">🔍</div>
+                    <div class="text-xs text-white/80 font-medium">Live Search</div>
+                </div>
+                <div class="p-2 rounded-xl hover:bg-white/5 transition-colors">
+                    <div class="text-2xl mb-1">📄</div>
+                    <div class="text-xs text-white/80 font-medium">Case Details</div>
+                </div>
+                <div class="p-2 rounded-xl hover:bg-white/5 transition-colors">
+                    <div class="text-2xl mb-1">🔔</div>
+                    <div class="text-xs text-white/80 font-medium">Updates</div>
+                </div>
+            </div>
+
+            <p class="mt-8 text-sm text-white/60">
+                <a href="{{ url_for('index') }}"
+                    class="hover:text-white transition-colors underline decoration-white/30 hover:decoration-white">Return
+                    to Home</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom Blob Animation */
+    @keyframes blob {
+        0% {
+            transform: translate(0px, 0px) scale(1);
+        }
+
+        33% {
+            transform: translate(30px, -50px) scale(1.1);
+        }
+
+        66% {
+            transform: translate(-20px, 20px) scale(0.9);
+        }
+
+        100% {
+            transform: translate(0px, 0px) scale(1);
+        }
+    }
+
+    .animate-blob {
+        animation: blob 7s infinite;
+    }
+
+    .animation-delay-2000 {
+        animation-delay: 2s;
+    }
+
+    .animation-delay-4000 {
+        animation-delay: 4s;
+    }
+</style>
+{% endblock %}

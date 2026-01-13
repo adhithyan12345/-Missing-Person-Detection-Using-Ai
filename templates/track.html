@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --neon-blue: #00f3ff;
+        --neon-purple: #bd00ff;
+        --dark-bg: #0a0a12;
+        --grid-line: rgba(0, 243, 255, 0.1);
+    }
+
+    .cyber-bg {
+        background-color: var(--dark-bg);
+        background-image:
+            linear-gradient(var(--grid-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+        background-size: 50px 50px;
+        position: relative;
+    }
+
+    .cyber-bg::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at center, transparent 0%, var(--dark-bg) 80%);
+        pointer-events: none;
+    }
+
+    .scanner-line {
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background: var(--neon-blue);
+        box-shadow: 0 0 15px var(--neon-blue);
+        animation: scan 3s linear infinite;
+        opacity: 0.5;
+    }
+
+    @keyframes scan {
+        0% {
+            top: 0%;
+            opacity: 0;
+        }
+
+        10% {
+            opacity: 0.8;
+        }
+
+        90% {
+            opacity: 0.8;
+        }
+
+        100% {
+            top: 100%;
+            opacity: 0;
+        }
+    }
+
+    .cyber-card {
+        background: rgba(16, 16, 28, 0.9);
+        border: 1px solid rgba(0, 243, 255, 0.3);
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.1), inset 0 0 20px rgba(0, 243, 255, 0.05);
+        backdrop-filter: blur(10px);
+    }
+
+    .cyber-input {
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--neon-blue);
+        color: var(--neon-blue);
+        font-family: 'Courier New', monospace;
+        letter-spacing: 2px;
+    }
+
+    .cyber-input:focus {
+        box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+        outline: none;
+    }
+
+    .cyber-button {
+        background: transparent;
+        border: 2px solid var(--neon-blue);
+        color: var(--neon-blue);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+
+    .cyber-button:hover {
+        background: var(--neon-blue);
+        color: var(--dark-bg);
+        box-shadow: 0 0 30px var(--neon-blue);
+    }
+
+    .glitch-text {
+        position: relative;
+        color: #fff;
+        text-shadow: 2px 2px var(--neon-purple), -2px -2px var(--neon-blue);
+        animation: glitch 1s infinite;
+    }
+
+    @keyframes glitch {
+        0% {
+            text-shadow: 2px 2px var(--neon-purple), -2px -2px var(--neon-blue);
+        }
+
+        25% {
+            text-shadow: -2px 2px var(--neon-purple), 2px -2px var(--neon-blue);
+        }
+
+        50% {
+            text-shadow: 2px -2px var(--neon-purple), -2px 2px var(--neon-blue);
+        }
+
+        75% {
+            text-shadow: -2px -2px var(--neon-purple), 2px 2px var(--neon-blue);
+        }
+
+        100% {
+            text-shadow: 2px 2px var(--neon-purple), -2px -2px var(--neon-blue);
+        }
+    }
+
+    .typing-cursor::after {
+        content: '|';
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0;
+        }
+    }
+</style>
+
+<div class="min-h-screen cyber-bg flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <div class="scanner-line"></div>
+
+    <div class="max-w-md w-full relative z-10">
+        
+        <div class="text-center mb-10">
+            <div class="inline-block p-4 border-2 border-dashed border-cyan-500 rounded-full mb-4 animate-spin-slow">
+                <i class="fas fa-radar text-4xl text-cyan-400"></i>
+            </div>
+            <h1 class="text-4xl font-bold text-white tracking-widest uppercase mb-2">
+                Trace<span class="text-cyan-400">Case</span>
+            </h1>
+            <p class="text-cyan-200/60 font-mono text-sm typing-cursor">
+                INITIALIZING SEARCH PROTOCOL...
+            </p>
+        </div>
+
+        
+        <div class="cyber-card rounded-xl p-8 transform hover:scale-[1.02] transition-transform duration-500">
+            <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400 -mt-1 -ml-1"></div>
+            <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400 -mt-1 -mr-1"></div>
+            <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400 -mb-1 -ml-1"></div>
+            <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400 -mb-1 -mr-1"></div>
+
+            <form action="{{ url_for('track') }}" method="POST" class="space-y-8">
+                <div>
+                    <label for="ticket_id" class="block text-xs font-mono text-cyan-400 mb-2 uppercase tracking-widest">
+                        // ENTER TICKET IDENTIFIER
+                    </label>
+                    <div class="relative">
+                        <input type="text" name="ticket_id" id="ticket_id" required placeholder="MP-XXXX-XXXX"
+                            class="cyber-input w-full px-4 py-4 text-lg rounded-lg bg-black/50 placeholder-cyan-800/50">
+                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2">
+                            <i class="fas fa-qrcode text-cyan-500/50"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="cyber-button w-full py-4 text-lg font-bold rounded-lg group relative">
+                    <span class="relative z-10 flex items-center justify-center gap-3">
+                        Execute Search <i class="fas fa-chevron-right text-xs"></i>
+                    </span>
+                </button>
+            </form>
+
+            
+            <div class="mt-8 grid grid-cols-2 gap-4">
+                <div class="bg-black/30 p-3 rounded border border-cyan-900/30 text-center">
+                    <div class="text-xs text-cyan-600 font-mono mb-1">SYSTEM STATUS</div>
+                    <div class="text-green-400 text-sm font-bold animate-pulse">ONLINE</div>
+                </div>
+                <div class="bg-black/30 p-3 rounded border border-cyan-900/30 text-center">
+                    <div class="text-xs text-cyan-600 font-mono mb-1">DB CONNECTION</div>
+                    <div class="text-green-400 text-sm font-bold">SECURE</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('index') }}"
+                class="text-cyan-500/50 hover:text-cyan-400 text-sm font-mono transition-colors">
+                <i class="fas fa-undo mr-2"></i>ABORT AND RETURN HOME
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

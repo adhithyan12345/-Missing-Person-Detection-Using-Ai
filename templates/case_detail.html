@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" data-aos="fade-up">
+
+    
+    <a href="{{ url_for('index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium mb-6 inline-block">&larr;
+        Back to Home</a>
+
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="md:flex">
+            
+            <div class="md:w-1/3 bg-gray-50 p-8 text-center border-r border-gray-100">
+                <div class="relative w-full aspect-[4/5] rounded-xl overflow-hidden shadow-lg mb-6 mx-auto sm:max-w-xs">
+                    <img src="{{ url_for('static', filename='uploads/' + person.photo_path) }}"
+                        alt="{{ person.full_name }}" class="w-full h-full object-cover">
+                    
+                    <span class="absolute top-4 right-4 px-4 py-1.5 rounded-full text-sm font-bold shadow-md
+                        {% if person.status == 'Missing' %} bg-red-500 text-white
+                        {% elif person.status == 'Found' %} bg-green-500 text-white
+                        {% else %} bg-gray-500 text-white {% endif %}">
+                        {{ person.status }}
+                    </span>
+                </div>
+
+                
+                <div class="space-y-3">
+                    <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Share to Help</h3>
+                    <div class="flex justify-center space-x-4">
+                        <a href="https://wa.me/?text=MISSING:%20Help%20find%20{{ person.full_name }}.%20Seen%20at%20{{ person.last_seen_location }}.%20More%20info:%20{{ request.url }}"
+                            target="_blank"
+                            class="flex items-center justify-center w-12 h-12 bg-green-500 text-white rounded-full hover:bg-green-600 transition shadow-md">
+                            <i class="fab fa-whatsapp text-xl"></i>
+                        </a>
+                        <a href="https://twitter.com/intent/tweet?text=URGENT:%20Missing%20Person%20{{ person.full_name }}.%20Please%20help%20RT!&url={{ request.url }}"
+                            target="_blank"
+                            class="flex items-center justify-center w-12 h-12 bg-blue-400 text-white rounded-full hover:bg-blue-500 transition shadow-md">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <button onclick="navigator.clipboard.writeText(window.location.href); alert('Link copied!');"
+                            class="flex items-center justify-center w-12 h-12 bg-gray-600 text-white rounded-full hover:bg-gray-700 transition shadow-md">
+                            <i class="fas fa-link text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                
+                <a href="{{ url_for('download_poster', ticket_id=person.ticket_id) }}"
+                    class="block w-full text-center mt-6 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-xl shadow-lg hover:from-red-700 hover:to-red-800 transition transform hover:-translate-y-1">
+                    <i class="fas fa-print mr-2"></i> Download Smart Poster
+                </a>
+            </div>
+
+            
+            <div class="md:w-2/3 p-8 lg:p-12">
+                <div class="mb-8">
+                    <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ person.full_name }}</h1>
+                    <p class="text-lg text-gray-500 flex items-center">
+                        <i class="fas fa-tag mr-2"></i> Case ID: {{ person.ticket_id }}
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 mb-8 text-sm sm:text-base">
+                    <div>
+                        <span class="block text-gray-400 text-xs uppercase tracking-wide">Age</span>
+                        <span class="font-semibold text-gray-900">{{ person.age }} Years Old</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-400 text-xs uppercase tracking-wide">Gender</span>
+                        <span class="font-semibold text-gray-900">{{ person.gender }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-400 text-xs uppercase tracking-wide">Last Seen Date</span>
+                        <span class="font-semibold text-gray-900">{{ person.last_seen_date }}</span>
+                    </div>
+                    <div>
+                        <span class="block text-gray-400 text-xs uppercase tracking-wide">Location</span>
+                        <span class="font-semibold text-gray-900">{{ person.last_seen_location }}</span>
+                    </div>
+                </div>
+
+                <div class="mb-10">
+                    <h3 class="text-lg font-bold text-gray-900 mb-3 border-b pb-2">Description</h3>
+                    <p class="text-gray-600 leading-relaxed">{{ person.description }}</p>
+                </div>
+
+                
+                <div class="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-indigo-600 p-2 rounded-lg mr-3">
+                            <i class="fas fa-lightbulb text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Have you seen this person?</h3>
+                            <p class="text-sm text-indigo-600">Submit an anonymous tip to help the investigation.
+                            </p>
+                        </div>
+                    </div>
+
+                    <form action="{{ url_for('submit_tip', person_id=person.id) }}" method="POST">
+                        <div class="space-y-4">
+                            <textarea name="tip_details" rows="3" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="I saw someone matching this description at..."></textarea>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <input type="text" name="location"
+                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Location of sighting (Optional)">
+                                <input type="text" name="contact_info"
+                                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Your Contact Info (Optional)">
+                            </div>
+
+                            <button type="submit"
+                                class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition transform hover:-translate-y-0.5 shadow-md">
+                                Submit Tip Securely
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Photo - FindThem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideInUp 0.8s ease-out forwards;
+        }
+
+        .upload-zone {
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .upload-zone:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+        }
+
+        .card-3d {
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .card-3d:hover {
+            transform: translateY(-15px) rotateY(5deg);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: float 6s infinite ease-in-out;
+        }
+    </style>
+</head>
+
+<body>
+    
+    <div class="particle" style="width: 60px; height: 60px; top: 10%; left: 15%; animation-delay: 0s;"></div>
+    <div class="particle" style="width: 40px; height: 40px; top: 60%; left: 85%; animation-delay: 2s;"></div>
+    <div class="particle" style="width: 80px; height: 80px; top: 80%; left: 10%; animation-delay: 4s;"></div>
+
+    <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-6xl mx-auto animate-slide-in">
+            
+            <div class="text-center mb-12">
+                <div class="inline-block mb-4">
+                    <span class="text-6xl">🔍</span>
+                </div>
+                <h1 class="text-5xl font-extrabold text-white mb-4" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+                    AI Face Recognition Search
+                </h1>
+                <p class="text-white text-opacity-90 text-xl max-w-2xl mx-auto">
+                    Upload a photo and let our advanced AI find matches instantly in our database
+                </p>
+                <a href="{{ url_for('index') }}" </a>
+            </div>
+
+            
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for message in messages %}
+            <div class="glass-card rounded-2xl p-4 mb-8 shadow-xl border-l-4 border-indigo-500 animate-slide-in">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-indigo-900 font-medium">{{ message }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            
+            <div class="glass-card rounded-3xl p-10 mb-12 shadow-2xl">
+                <form action="{{ url_for('search') }}" method="POST" enctype="multipart/form-data">
+                    <div
+                        class="upload-zone bg-gradient-to-br from-indigo-50 to-purple-50 border-3 border-dashed border-indigo-300 rounded-2xl p-20 text-center cursor-pointer">
+                        
+                        <div class="mb-6">
+                            <svg class="mx-auto h-28 w-28 text-indigo-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                        </div>
+
+                        <label for="photo" class="cursor-pointer">
+                            <span
+                                class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent block mb-3">
+                                Upload Your Photo
+                            </span>
+                            <input id="photo" name="photo" type="file" class="sr-only" required accept="image/*"
+                                onchange="this.form.submit()">
+                        </label>
+
+                        <p class="text-gray-600 text-lg mb-2">Drag and drop or click to browse</p>
+                        <p class="text-gray-500 text-sm">PNG, JPG, GIF • Maximum 10MB</p>
+                        <div class="mt-6 flex items-center justify-center space-x-2 text-indigo-600">
+                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium">Instant AI-Powered Matching</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            
+            {% if match_results %}
+            
+            <div class="glass-card rounded-2xl p-6 mb-8 shadow-xl">
+                <div class="flex items-center justify-center space-x-4">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg class="h-7 w-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900">{{ match_results|length }} Match{{ 'es' if
+                            match_results|length > 1 else '' }} Found!</h3>
+                        <p class="text-gray-600">Successfully identified potential matches in our database</p>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {% for result in match_results %}
+                <div class="glass-card rounded-2xl overflow-hidden shadow-xl card-3d">
+                    
+                    <div class="relative h-64 bg-gradient-to-br from-indigo-400 to-purple-500 p-6">
+                        <div class="h-full rounded-xl overflow-hidden shadow-2xl">
+                            <img src="{{ url_for('static', filename='uploads/' + result.photo_path) }}"
+                                alt="{{ result.full_name }}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="absolute top-8 right-8">
+                            <div class="bg-white px-4 py-2 rounded-full shadow-lg">
+                                <span class="text-indigo-600 font-bold text-sm">{{ result.match_confidence }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ result.full_name }}</h3>
+                        <p class="text-gray-600 mb-4">{{ result.age }} years • {{ result.gender }}</p>
+
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                <span class="text-xl">📍</span>
+                                <div class="flex-1">
+                                    <p class="text-xs text-gray-500 font-medium">Last Seen Location</p>
+                                    <p class="text-sm text-gray-900">{{ result.last_seen_location }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                <span class="text-xl">📅</span>
+                                <div class="flex-1">
+                                    <p class="text-xs text-gray-500 font-medium">Last Seen Date</p>
+                                    <p class="text-sm text-gray-900">{{ result.last_seen_date }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                <span class="text-xl">📝</span>
+                                <div class="flex-1">
+                                    <p class="text-xs text-gray-500 font-medium">Description</p>
+                                    <p class="text-sm text-gray-700">{{ result.description }}</p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="flex items-center justify-between p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
+                                <span class="text-sm font-medium text-gray-700">📞 Contact</span>
+                                <a href="tel:{{ result.contact_phone }}"
+                                    class="text-indigo-600 hover:text-indigo-700 font-bold text-sm">
+                                    {{ result.contact_phone }}
+                                </a>
+                            </div>
+
+                            
+                            <div class="flex justify-center pt-2">
+                                <span
+                                    class="px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-sm font-bold rounded-full shadow-lg">
+                                    {{ result.status }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

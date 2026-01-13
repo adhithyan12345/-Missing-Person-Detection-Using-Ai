@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Status - FindThem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideInUp 0.8s ease-out forwards;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="particle" style="width: 60px; height: 60px; top: 10%; left: 15%; animation-delay: 0s;"></div>
+    <div class="particle" style="width: 40px; height: 40px; top: 60%; left: 85%; animation-delay: 2s;"></div>
+    <div class="particle" style="width: 80px; height: 80px; top: 80%; left: 10%; animation-delay: 4s;"></div>
+
+    <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-5xl mx-auto animate-slide-in">
+
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-extrabold text-white mb-2" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+                    Case Details
+                </h1>
+                <p class="text-white text-opacity-90 text-lg">Ticket ID: {{ case.ticket_id }}</p>
+                <a href="{{ url_for('index') }}"
+                    class="inline-block mt-4 text-white hover:text-opacity-80 transition-colors font-medium">
+                    ← Back to Home
+                </a>
+            </div>
+
+
+            <div class="glass-card rounded-3xl overflow-hidden shadow-2xl mb-8">
+
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">{{ case.full_name }}</h2>
+                            <p class="text-indigo-100">{{ case.gender }}, {{ case.age }} years old</p>
+                        </div>
+                        <span class="px-4 py-2 rounded-full text-sm font-bold
+                            {% if case.status == 'Found' %} bg-green-500 text-white
+                            {% elif case.status == 'Missing' %} bg-red-500 text-white
+                            {% else %} bg-yellow-500 text-white {% endif %}">
+                            {{ case.status }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="p-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                        <div class="lg:col-span-1">
+                            <div class="rounded-2xl overflow-hidden shadow-xl">
+                                <img src="{{ url_for('static', filename='uploads/' + case.photo_path) }}"
+                                    alt="{{ case.full_name }}" class="w-full h-auto object-cover">
+                            </div>
+                        </div>
+
+
+                        <div class="lg:col-span-2 space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="p-4 bg-gray-50 rounded-xl">
+                                    <p class="text-xs text-gray-500 font-medium mb-1">📅 Last Seen Date</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ case.last_seen_date }}</p>
+                                </div>
+
+                                <div class="p-4 bg-gray-50 rounded-xl">
+                                    <p class="text-xs text-gray-500 font-medium mb-1">📍 Last Seen Location</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ case.last_seen_location }}</p>
+                                </div>
+
+                                <div class="p-4 bg-gray-50 rounded-xl">
+                                    <p class="text-xs text-gray-500 font-medium mb-1">📞 Contact Phone</p>
+                                    <a href="tel:{{ case.contact_phone }}"
+                                        class="text-lg font-semibold text-indigo-600 hover:text-indigo-700">
+                                        {{ case.contact_phone }}
+                                    </a>
+                                </div>
+
+                                <div class="p-4 bg-gray-50 rounded-xl">
+                                    <p class="text-xs text-gray-500 font-medium mb-1">🎫 Ticket ID</p>
+                                    <p class="text-lg font-semibold text-gray-900">{{ case.ticket_id }}</p>
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-gray-50 rounded-xl">
+                                <p class="text-xs text-gray-500 font-medium mb-2">📝 Description</p>
+                                <p class="text-gray-700">{{ case.description }}</p>
+                            </div>
+
+
+                            <div class="flex flex-wrap gap-3 pt-4">
+                                <a href="{{ url_for('download_report', ticket_id=case.ticket_id) }}"
+                                    class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all transform hover:-translate-y-1 shadow-lg">
+                                    📄 Download Report
+                                </a>
+                                <a href="{{ url_for('download_poster', ticket_id=case.ticket_id) }}"
+                                    class="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-semibold rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all transform hover:-translate-y-1 shadow-lg">
+                                    <i class="fas fa-print mr-2"></i> Download Smart Poster
+                                </a>
+                                {% if current_user.is_authenticated and current_user.role == 'officer' %}
+                                <a href="{{ url_for('edit_case', case_id=case.id) }}"
+                                    class="px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white font-semibold rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all transform hover:-translate-y-1 shadow-lg">
+                                    ✏️ Edit Case
+                                </a>
+                                {% endif %}
+
+                                {% if current_user.is_authenticated and current_user.role == 'officer' %}
+                                <!-- Edit button removed from here as it is already above -->
+
+                                {% if case.status != 'Found' %}
+                                <form action="{{ url_for('mark_found', case_id=case.id) }}" method="POST" class="inline"
+                                    onsubmit="return confirm('Are you sure you want to mark this case as FOUND?');">
+                                    <button type="submit"
+                                        class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl hover:from-green-700 hover:to-green-800 transition-all transform hover:-translate-y-1 shadow-lg">
+                                        ✅ Mark Found
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                <form action="{{ url_for('delete_case', case_id=case.id) }}" method="POST"
+                                    class="inline"
+                                    onsubmit="return confirm('WARNING: Are you sure you want to PERMANENTLY DELETE this case? This action cannot be undone.');">
+                                    <button type="submit"
+                                        class="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition-all transform hover:-translate-y-1 shadow-lg">
+                                        🗑️ Delete Case
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            {% if updates %}
+            <div class="glass-card rounded-3xl p-8 shadow-2xl">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">📢 Case Updates</h3>
+                <div class="space-y-4">
+                    {% for update in updates %}
+                    <div
+                        class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex flex-col sm:flex-row justify-between items-start mb-4">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-900 flex items-center">
+                                    {{ update.update_type }}
+                                    {% if update.source %}
+                                    <span
+                                        class="ml-3 px-2 py-0.5 rounded text-xs font-bold bg-indigo-100 text-indigo-700 uppercase tracking-wide border border-indigo-200">
+                                        {{ update.source }}
+                                    </span>
+                                    {% endif %}
+                                </h4>
+                            </div>
+                            <div class="text-sm text-gray-500 mt-1 sm:mt-0 font-medium bg-gray-50 px-3 py-1 rounded-md">
+                                📅 {{ update.created_at.strftime('%B %d, %Y') }} &nbsp;|&nbsp; ⏰ {{
+                                update.created_at.strftime('%I:%M %p') }}
+                            </div>
+                        </div>
+
+                        {% if update.location and update.location != 'Unknown' %}
+                        <div class="mb-3 flex items-start text-gray-700">
+                            <i class="fas fa-map-marker-alt text-red-500 mt-1 mr-2"></i>
+                            <span class="font-semibold">{{ update.location }}</span>
+                        </div>
+                        {% endif %}
+
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                            <p class="text-gray-800 leading-relaxed">{{ update.details }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="glass-card rounded-3xl p-8 shadow-2xl text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">No Updates Yet</h3>
+                <p class="text-gray-600">There are no updates for this case at the moment.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

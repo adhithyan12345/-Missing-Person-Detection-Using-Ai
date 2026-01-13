@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Photo - FindThem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            min-height: 100vh;
+        }
+
+        .gradient-border {
+            position: relative;
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border-radius: 1.5rem;
+        }
+
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 1.5rem;
+            padding: 2px;
+            background: linear-gradient(145deg, #3b82f6, #8b5cf6, #ec4899);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(139, 92, 246, 0.8);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .upload-zone {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .upload-zone:hover {
+            transform: translateY(-8px) scale(1.02);
+            animation: glow 2s infinite;
+        }
+
+        .neon-text {
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.8),
+                0 0 20px rgba(139, 92, 246, 0.6),
+                0 0 30px rgba(236, 72, 153, 0.4);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto animate-fade-in-up">
+            
+            <div class="text-center mb-12">
+                <h1 class="text-5xl font-extrabold text-white mb-4 neon-text">AI Face Recognition Search</h1>
+                <p class="text-gray-400 text-lg">Upload a photo and let our AI find matches instantly</p>
+                <a href="{{ url_for('index') }}"
+                    class="inline-block mt-6 text-blue-400 hover:text-blue-300 transition-colors">
+                    ← Back to Home
+                </a>
+            </div>
+
+            
+            <div class="gradient-border p-8 mb-12">
+                <form action="{{ url_for('search') }}" method="POST" enctype="multipart/form-data">
+                    <div
+                        class="upload-zone bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-dashed border-blue-500/50 rounded-2xl p-16 text-center cursor-pointer">
+                        <div class="relative">
+                            
+                            <svg class="mx-auto h-24 w-24 text-blue-400 mb-6" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
+
+                            <label for="photo" class="cursor-pointer">
+                                <span
+                                    class="text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                                    Drop your image here or click to browse
+                                </span>
+                                <input id="photo" name="photo" type="file" class="sr-only" required accept="image/*"
+                                    onchange="this.form.submit()">
+                            </label>
+
+                            <p class="mt-4 text-gray-400">Supports: JPG, PNG, GIF • Max size: 10MB</p>
+                            <p class="mt-2 text-sm text-gray-500">⚡ Powered by advanced AI facial recognition</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            
+            {% if match_results %}
+            
+            <div class="gradient-border p-6 mb-8">
+                <div class="flex items-center justify-center">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-shrink-0">
+                            <svg class="h-10 w-10 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white">{{ match_results|length }} Match{{ 'es' if
+                                match_results|length > 1 else '' }} Found!</h3>
+                            <p class="text-gray-400">Our AI has identified potential matches in the database</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {% for result in match_results %}
+                <div class="gradient-border card-hover">
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl overflow-hidden h-full">
+                        
+                        <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 px-6 py-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">{{ result.full_name }}</h3>
+                                    <p class="text-blue-100 text-sm">Match #{{ loop.index }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-white">{{ result.match_confidence }}</div>
+                                    <div class="text-xs text-blue-100">Confidence</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            
+                            <div class="mb-6 relative group">
+                                <img src="{{ url_for('static', filename='uploads/' + result.photo_path) }}"
+                                    alt="{{ result.full_name }}"
+                                    class="w-full h-72 object-cover rounded-xl shadow-2xl group-hover:scale-105 transition-transform duration-300">
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                            </div>
+
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
+                                    <span class="text-gray-400 text-sm">👤 Age / Gender</span>
+                                    <span class="text-white font-semibold">{{ result.age }} / {{ result.gender }}</span>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
+                                    <span class="text-gray-400 text-sm">📅 Last Seen</span>
+                                    <span class="text-white font-semibold">{{ result.last_seen_date }}</span>
+                                </div>
+
+                                <div class="p-3 bg-slate-700/50 rounded-lg">
+                                    <span class="text-gray-400 text-sm block mb-2">📍 Location</span>
+                                    <span class="text-white">{{ result.last_seen_location }}</span>
+                                </div>
+
+                                <div class="p-3 bg-slate-700/50 rounded-lg">
+                                    <span class="text-gray-400 text-sm block mb-2">📝 Description</span>
+                                    <span class="text-gray-300 text-sm">{{ result.description }}</span>
+                                </div>
+
+                                <div
+                                    class="flex items-center justify-between p-3 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg border border-blue-500/30">
+                                    <span class="text-gray-400 text-sm">📞 Contact</span>
+                                    <a href="tel:{{ result.contact_phone }}"
+                                        class="text-blue-400 hover:text-blue-300 font-semibold transition-colors">
+                                        {{ result.contact_phone }}
+                                    </a>
+                                </div>
+
+                                
+                                <div class="flex justify-center pt-2">
+                                    <span
+                                        class="px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm font-bold rounded-full shadow-lg">
+                                        🔍 {{ result.status }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

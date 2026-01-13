@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 pb-12">
+    
+    <div class="bg-gray-800 border-b border-gray-700 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-white leading-tight">Volunteer Dashboard</h1>
+                    <p class="text-sm text-cyan-400 mt-1">
+                        <i class="fas fa-map-marker-alt mr-1"></i> {{ volunteer.location }}
+                    </p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-300 font-medium hidden sm:block">Welcome, {{ volunteer.full_name }}</span>
+                    <a href="{{ url_for('volunteer_logout') }}"
+                        class="px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-sm font-bold">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        
+        <div class="bg-indigo-900/30 border border-indigo-500/30 rounded-xl p-6 mb-8 flex items-start space-x-4">
+            <div class="bg-indigo-500/20 p-3 rounded-lg">
+                <i class="fas fa-search text-indigo-400 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-white">Active Alerts in Your Network</h3>
+                <p class="text-gray-400 mt-1">There are <span class="text-white font-bold">{{ cases|length }}</span>
+                    active missing person cases that need your attention. Please review the details below and report any
+                    sightings.</p>
+            </div>
+        </div>
+
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for case in cases %}
+            <div
+                class="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700 hover:border-gray-600 transition-all group">
+                <div class="relative h-64 overflow-hidden">
+                    <img src="{{ url_for('static', filename='uploads/' + case.photo_path) }}" alt="{{ case.full_name }}"
+                        class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
+                    <div class="absolute top-0 right-0 p-2">
+                        <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded shadow-sm">MISSING</span>
+                    </div>
+                </div>
+
+                <div class="p-5">
+                    <h3 class="text-xl font-bold text-white mb-1">{{ case.full_name }}</h3>
+                    <p class="text-gray-400 text-sm mb-4">{{ case.gender }}, {{ case.age }} years old</p>
+
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-start text-sm text-gray-300">
+                            <i class="fas fa-map-marker-alt text-red-400 mt-1 mr-2 w-4"></i>
+                            <span class="line-clamp-1">{{ case.last_seen_location }}</span>
+                        </div>
+                        <div class="flex items-start text-sm text-gray-300">
+                            <i class="far fa-clock text-indigo-400 mt-1 mr-2 w-4"></i>
+                            <span>{{ case.last_seen_date }}</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <a href="{{ url_for('case_detail', person_id=case.id) }}"
+                            class="flex justify-center items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg transition-colors">
+                            View Details
+                        </a>
+                        <a href="{{ url_for('download_poster', ticket_id=case.ticket_id) }}"
+                            class="flex justify-center items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-colors">
+                            <i class="fas fa-print mr-1"></i> Poster
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-span-full text-center py-12">
+                <div class="inline-block p-6 rounded-full bg-gray-800 mb-4">
+                    <i class="fas fa-check-circle text-4xl text-green-500"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">All Clear</h3>
+                <p class="text-gray-400 mt-2">No active missing person reports at the moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

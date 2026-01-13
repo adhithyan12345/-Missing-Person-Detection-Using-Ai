@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    .animate-float {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+</style>
+
+
+<div class="gradient-bg relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+
+            <div class="text-white animate-fade-in-up relative z-10">
+                <h1 class="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                    Reuniting Families with
+                    <span class="block text-yellow-300">AI Technology</span>
+                </h1>
+                <p class="text-xl text-white text-opacity-90 mb-8">
+                    Our advanced facial recognition platform helps identify missing persons quickly and accurately.
+                    Report a case or search our database to help bring someone home.
+                </p>
+
+
+                <div class="flex flex-wrap gap-4">
+                    <a href="{{ url_for('report') }}"
+                        class="px-8 py-4 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-opacity-90 transition-all transform hover:-translate-y-1 hover:shadow-xl">
+                        Report Missing
+                    </a>
+                    <a href="{{ url_for('search') }}"
+                        class="px-8 py-4 glass-effect text-white font-semibold rounded-lg hover:bg-opacity-20 transition-all transform hover:-translate-y-1">
+                        Search Photo
+                    </a>
+                    <a href="{{ url_for('video_search') }}"
+                        class="px-8 py-4 glass-effect text-white font-semibold rounded-lg hover:bg-opacity-20 transition-all transform hover:-translate-y-1">
+                        Search Video
+                    </a>
+                    {% if current_user.role == 'officer' %}
+                    <a href="{{ url_for('live_search') }}"
+                        class="px-8 py-4 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-all transform hover:-translate-y-1 hover:shadow-xl">
+                        🔴 Live Search
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('track') }}"
+                        class="px-8 py-4 glass-effect text-white font-semibold rounded-lg hover:bg-opacity-20 transition-all transform hover:-translate-y-1">
+                        Track Case
+                    </a>
+                    <a href="{{ url_for('report_suspicious') }}"
+                        class="px-8 py-4 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-900 transition-all transform hover:-translate-y-1 hover:shadow-xl">
+                        Report Anonymous Person
+                    </a>
+                </div>
+            </div>
+
+
+            <div class="hidden lg:block animate-float">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-white opacity-10 rounded-full blur-3xl"></div>
+                    <img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
+                        alt="Family reunion" class="relative rounded-2xl shadow-2xl">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="absolute bottom-0 left-0 right-0">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
+                fill="white" />
+        </svg>
+    </div>
+</div>
+
+
+<div class="bg-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">Trusted by Communities Everywhere</h2>
+            <p class="text-xl text-gray-600">Our technology is making a real difference in finding missing loved ones
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div
+                class="text-center p-8 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 transform transition hover:scale-105">
+                <div class="text-5xl font-bold text-indigo-600 mb-2">100%</div>
+                <div class="text-lg text-gray-700 font-medium">Cases Solved</div>
+            </div>
+            <div
+                class="text-center p-8 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 transform transition hover:scale-105">
+                <div class="text-5xl font-bold text-purple-600 mb-2">24/7</div>
+                <div class="text-lg text-gray-700 font-medium">Active Searches</div>
+            </div>
+            <div
+                class="text-center p-8 rounded-2xl bg-gradient-to-br from-pink-50 to-red-50 transform transition hover:scale-105">
+                <div class="text-5xl font-bold text-pink-600 mb-2">99.9%</div>
+                <div class="text-lg text-gray-700 font-medium">Accuracy</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wide">Process</span>
+            <h2 class="text-4xl font-bold text-gray-900 mt-2 mb-4">How It Works</h2>
+            <p class="text-xl text-gray-600">Our simple three-step process helps you report or find missing persons
+                efficiently</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg transform transition hover:scale-105 hover:shadow-xl">
+                <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-3">1. Upload Photo</h3>
+                <p class="text-gray-600">Upload a clear photo of the missing person along with their details to our
+                    secure database.</p>
+            </div>
+
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg transform transition hover:scale-105 hover:shadow-xl">
+                <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-3">2. AI Analysis</h3>
+                <p class="text-gray-600">Our advanced AI scans the photo and creates a unique facial encoding for
+                    precise matching.</p>
+            </div>
+
+
+            <div class="bg-white p-8 rounded-2xl shadow-lg transform transition hover:scale-105 hover:shadow-xl">
+                <div class="w-16 h-16 bg-pink-600 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-3">3. Instant Match</h3>
+                <p class="text-gray-600">Search against our database or use live video feed to find matches in
+                    real-time.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="bg-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-4xl font-bold text-gray-900 mb-8">Recent Cases</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for person in recent_cases %}
+            <a href="{{ url_for('case_detail', person_id=person.id) }}" class="block">
+                <div
+                    class="bg-white rounded-2xl shadow-lg overflow-hidden transform transition hover:scale-105 hover:shadow-2xl">
+                    <div class="h-64 bg-gray-200 overflow-hidden">
+                        <img src="{{ url_for('static', filename='uploads/' + person.photo_path) }}"
+                            alt="{{ person.full_name }}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">{{ person.full_name }}</h3>
+                        <p class="text-gray-600 mb-1">Age: {{ person.age }} | {{ person.gender }}</p>
+                        <p class="text-gray-600">Last seen: {{ person.last_seen_location }}</p>
+                        <span
+                            class="inline-block mt-3 px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-semibold rounded-full">
+                            {{ person.status }}
+                        </span>
+                    </div>
+                </div>
+            </a>
+            {% else %}
+            <p class="text-gray-500 col-span-3 text-center py-12">No active cases reported yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

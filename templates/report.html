@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Missing Person - FindThem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.6s ease-out forwards;
+        }
+
+        .input-field {
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto animate-slide-in">
+            
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-white mb-2">Report Missing Person</h1>
+                <p class="text-white text-opacity-90">Please provide as much detail as possible. High-quality photos improve detection accuracy.</p>
+                <a href="{{ url_for('index') }}" class="inline-block mt-4 text-white hover:text-opacity-80 transition-colors">
+                    ← Back to Home
+                </a>
+            </div>
+
+            
+            <div class="glass-card rounded-2xl p-8 shadow-2xl">
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    {% for message in messages %}
+                    <p class="text-red-700">{{ message }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+
+                <form action="{{ url_for('report') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Personal Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <label for="full_name" class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                                <input type="text" name="full_name" id="full_name" required
+                                    class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label for="age" class="block text-sm font-medium text-gray-700 mb-2">Age *</label>
+                                <input type="number" name="age" id="age" required
+                                    class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">Gender *</label>
+                                <select id="gender" name="gender" required
+                                    class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Last Seen Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="last_seen_date" class="block text-sm font-medium text-gray-700 mb-2">Last Seen Date *</label>
+                                <input type="date" name="last_seen_date" id="last_seen_date" required
+                                    class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+
+                            <div>
+                                <label for="contact_phone" class="block text-sm font-medium text-gray-700 mb-2">Contact Phone *</label>
+                                <input type="tel" name="contact_phone" id="contact_phone" required placeholder="+91 1234567890"
+                                    class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label for="last_seen_location" class="block text-sm font-medium text-gray-700 mb-2">Last Seen Location *</label>
+                                <input type="text" name="last_seen_location" id="last_seen_location" required
+                                    placeholder="Click on map to select or type manually"
+                                    class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                                <input type="hidden" name="latitude" id="latitude">
+                                <input type="hidden" name="longitude" id="longitude">
+                                <div id="map" class="mt-3 h-64 w-full rounded-lg border-2 border-gray-300"></div>
+                                <p class="text-xs text-gray-500 mt-2">Click on the map to pin the exact location</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Additional Details</h3>
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description / Notes</label>
+                            <textarea id="description" name="description" rows="4" placeholder="Physical characteristics, clothing, any other relevant information..."
+                                class="input-field w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
+                        </div>
+                    </div>
+
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Upload Photos (Max 5) *</h3>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-indigo-500 transition-colors">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <div class="mt-4">
+                                <label for="photos" class="cursor-pointer">
+                                    <span class="mt-2 block text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                        Click to upload photos
+                                    </span>
+                                    <input id="photos" name="photos" type="file" class="sr-only" multiple accept="image/*" required>
+                                </label>
+                                <p class="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB each (Multiple photos recommended for better accuracy)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="pt-6">
+                        <button type="submit"
+                            class="w-full py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:-translate-y-1 hover:shadow-xl">
+                            Submit Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var map = L.map('map').setView([20.5937, 78.9629], 4); // Center on India
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            var marker;
+
+            map.on('click', function (e) {
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+
+                if (marker) {
+                    marker.setLatLng(e.latlng);
+                } else {
+                    marker = L.marker(e.latlng).addTo(map);
+                }
+
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+                document.getElementById('last_seen_location').value = lat.toFixed(6) + ", " + lng.toFixed(6);
+            });
+        });
+    </script>
+</body>
+</html>
