@@ -50,5 +50,6 @@ The application will start at `http://127.0.0.1:5000`.
 2. **Search**: Go to "Search" and upload a photo of a person you want to check.
 3. **Results**: The AI will compare the facial encoding and return the best match if the confidence is high enough.
 
-ip camera:http://192.0.0.4:8080/video
+ip camera:http:/your ip address/video
+
 
