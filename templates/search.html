@@ -78,14 +78,14 @@
 </head>
 
 <body>
-    
+
     <div class="particle" style="width: 60px; height: 60px; top: 10%; left: 15%; animation-delay: 0s;"></div>
     <div class="particle" style="width: 40px; height: 40px; top: 60%; left: 85%; animation-delay: 2s;"></div>
     <div class="particle" style="width: 80px; height: 80px; top: 80%; left: 10%; animation-delay: 4s;"></div>
 
     <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-6xl mx-auto animate-slide-in">
-            
+
             <div class="text-center mb-12">
                 <div class="inline-block mb-4">
                     <span class="text-6xl">🔍</span>
@@ -99,7 +99,7 @@
                 <a href="{{ url_for('index') }}" </a>
             </div>
 
-            
+
             {% with messages = get_flashed_messages() %}
             {% if messages %}
             {% for message in messages %}
@@ -121,12 +121,12 @@
             {% endif %}
             {% endwith %}
 
-            
+
             <div class="glass-card rounded-3xl p-10 mb-12 shadow-2xl">
                 <form action="{{ url_for('search') }}" method="POST" enctype="multipart/form-data">
                     <div
                         class="upload-zone bg-gradient-to-br from-indigo-50 to-purple-50 border-3 border-dashed border-indigo-300 rounded-2xl p-20 text-center cursor-pointer">
-                        
+
                         <div class="mb-6">
                             <svg class="mx-auto h-28 w-28 text-indigo-500" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
@@ -159,9 +159,9 @@
                 </form>
             </div>
 
-            
+
             {% if match_results %}
-            
+
             <div class="glass-card rounded-2xl p-6 mb-8 shadow-xl">
                 <div class="flex items-center justify-center space-x-4">
                     <div class="flex-shrink-0">
@@ -181,15 +181,15 @@
                 </div>
             </div>
 
-            
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {% for result in match_results %}
                 <div class="glass-card rounded-2xl overflow-hidden shadow-xl card-3d">
-                    
-                    <div class="relative h-64 bg-gradient-to-br from-indigo-400 to-purple-500 p-6">
-                        <div class="h-full rounded-xl overflow-hidden shadow-2xl">
+
+                    <div class="relative h-80 bg-gray-100 p-2">
+                        <div class="h-full rounded-xl overflow-hidden shadow-sm">
                             <img src="{{ url_for('static', filename='uploads/' + result.photo_path) }}"
-                                alt="{{ result.full_name }}" class="w-full h-full object-cover">
+                                alt="{{ result.full_name }}" class="w-full h-full object-contain">
                         </div>
                         <div class="absolute top-8 right-8">
                             <div class="bg-white px-4 py-2 rounded-full shadow-lg">
@@ -198,7 +198,7 @@
                         </div>
                     </div>
 
-                    
+
                     <div class="p-6">
                         <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ result.full_name }}</h3>
                         <p class="text-gray-600 mb-4">{{ result.age }} years • {{ result.gender }}</p>
@@ -207,7 +207,8 @@
                             <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
                                 <span class="text-xl">📍</span>
                                 <div class="flex-1">
-                                    <p class="text-xs text-gray-500 font-medium">Last Seen Location</p>
+                                    <p class="text-xs text-gray-500 font-medium">{{ 'Found Location' if result.status ==
+                                        'Found' else 'Last Seen Location' }}</p>
                                     <p class="text-sm text-gray-900">{{ result.last_seen_location }}</p>
                                 </div>
                             </div>
@@ -215,7 +216,8 @@
                             <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
                                 <span class="text-xl">📅</span>
                                 <div class="flex-1">
-                                    <p class="text-xs text-gray-500 font-medium">Last Seen Date</p>
+                                    <p class="text-xs text-gray-500 font-medium">{{ 'Found Date' if result.status ==
+                                        'Found' else 'Last Seen Date' }}</p>
                                     <p class="text-sm text-gray-900">{{ result.last_seen_date }}</p>
                                 </div>
                             </div>
@@ -237,17 +239,44 @@
                                 </a>
                             </div>
 
-                            
+
                             <div class="flex justify-center pt-2">
                                 <span
-                                    class="px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-sm font-bold rounded-full shadow-lg">
-                                    {{ result.status }}
+                                    class="px-4 py-2 {{ 'bg-gradient-to-r from-green-400 to-teal-400' if result.status == 'Found' else 'bg-gradient-to-r from-yellow-400 to-orange-400' }} text-white text-sm font-bold rounded-full shadow-lg">
+                                    {{ 'Anonymous Found' if result.status == 'Found' else result.status }}
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if show_report_option %}
+            <div class="glass-card rounded-2xl p-8 mb-8 shadow-xl border-l-4 border-yellow-500 animate-slide-in">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0">
+                            <div class="h-12 w-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <span class="text-2xl">⚠️</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">No Match Found</h3>
+                            <p class="text-gray-600 mt-1">This person is not in our missing persons database.</p>
+                            <p class="text-gray-600">If you believe this person is lost or suspicious, please report
+                                them.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('report_suspicious') }}"
+                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transform hover:scale-105 transition-all duration-200">
+                            <span class="mr-2">📝</span>
+                            Report Anonymous Person
+                        </a>
+                    </div>
+                </div>
             </div>
             {% endif %}
         </div>

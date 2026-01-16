@@ -399,6 +399,7 @@ def report_suspicious():
             else:
                 flash(f'Report submitted. No immediate positive matches with missing persons. Ticket ID: {ticket_id}')
 
+            refresh_face_cache()
             return redirect(url_for('index'))
 
         except Exception as e:
@@ -489,8 +490,11 @@ def search():
 
             if not match_results:
                 flash('No matches found.')
+                show_report_option = True
+            else:
+                show_report_option = False
 
-    return render_template('search.html', match_results=match_results)
+    return render_template('search.html', match_results=match_results, show_report_option=locals().get('show_report_option', False))
 
 @app.route('/video_search', methods=['GET', 'POST'])
 @login_required
