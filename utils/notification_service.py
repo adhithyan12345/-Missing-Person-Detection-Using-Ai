@@ -32,6 +32,7 @@ class NotificationManager:
                     <p><strong>Name:</strong> {match_details['name']}</p>
                     <p><strong>Match Confidence:</strong> {match_details.get('confidence', 'N/A')}</p>
                     <p><strong>Location:</strong> {match_details.get('location', 'Unknown')}</p>
+                    <p><strong>Side Detected:</strong> {match_details.get('side', 'N/A')}</p>
                     <p><strong>Time:</strong> {match_details.get('time', 'Just now')}</p>
                     <hr>
                     <p>Please log in to the portal to view full details and CCTV footage.</p>
