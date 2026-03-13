@@ -17,5 +17,5 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git remote add space https://huggingface.co/spaces/YOUR_HF_USERNAME/YOUR_SPACE_NAME
-          git push --force https://x-access-token:$HF_TOKEN@huggingface.co/spaces/YOUR_HF_USERNAME/YOUR_SPACE_NAME main
+          git remote add space https://huggingface.co/spaces/adhithyan12345/missing-person-detection
+          git push --force https://x-access-token:$HF_TOKEN@huggingface.co/spaces/adhithyan12345/missing-person-detection main
