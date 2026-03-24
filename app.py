@@ -11,7 +11,7 @@ import random
 import string
 import time
 import requests
-from datetime import datetime
+from datetime import datetime, time, timedelta
 from flask import Flask, render_template, request, redirect, url_for, flash, Response, jsonify, session
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -510,28 +510,46 @@ def search():
 @login_required
 def video_search():
     match_found = False
-    match_details_list = []
+    # Use session to keep track of detections across multiple search steps
+    if 'match_details_list' not in session:
+        session['match_details_list'] = []
+    
+    match_details_list = session['match_details_list']
 
     if request.method == 'POST':
         if 'video' not in request.files:
             flash('No video uploaded')
             return redirect(request.url)
-        file = request.files['video']
-        if file.filename == '':
+        
+        videos = request.files.getlist('video')
+        locations = request.form.getlist('location')
+        start_times = request.form.getlist('start_time')
+        
+        if not videos or all(v.filename == '' for v in videos):
             flash('No video selected')
             return redirect(request.url)
 
-        if file:
+        encodings_map = {k: v['encodings'] for k, v in KNOWN_FACES_CACHE.items()}
+        # Tracking IDs per SESSION to avoid literal duplicates (same person, same context)
+        # But we want to allow same person in DIFFERENT videos
+
+        for file, user_location, start_time in zip(videos, locations, start_times):
+            if file.filename == '':
+                continue
+            
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
+            # Use the provided location or fallback
+            location_name = user_location if user_location.strip() else f"Video Source ({filename})"
 
             cap = cv2.VideoCapture(filepath)
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            if fps == 0: fps = 30 # Fallback
+            
+            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             frame_count = 0
-
-            encodings_map = {k: v['encodings'] for k, v in KNOWN_FACES_CACHE.items()}
-            found_ids = set()
 
             while cap.isOpened():
                 ret, frame = cap.read()
@@ -542,41 +560,98 @@ def video_search():
                 if frame_count % 30 != 0:
                     continue
 
+                # Calculate Timestamp (Offset)
+                total_seconds = frame_count / fps
+                minutes = int(total_seconds // 60)
+                seconds = int(total_seconds % 60)
+                timestamp_str = f"{minutes:02d}:{seconds:02d}"
+
+                # Calculate Actual Real-World Time
+                try:
+                    h, m = map(int, start_time.split(':'))
+                    start_dt = datetime.combine(datetime.today(), time(h, m))
+                    actual_dt = start_dt + timedelta(seconds=total_seconds)
+                    actual_time_str = actual_dt.strftime("%H:%M:%S")
+                except Exception as e:
+                    print(f"Error calculating real time: {e}")
+                    actual_time_str = timestamp_str
 
                 face_results = get_all_face_encodings(frame)
 
-                for encoding, _ in face_results:
+                for encoding, rect in face_results:
                     match_id, _ = find_match(encoding, encodings_map, tolerance=1.2)
 
-                    if match_id and match_id not in found_ids:
-                        found_ids.add(match_id)
+                    if match_id:
+                        # Check if this specific sighting (Person + Video + Time) is already logged
+                        def parse_time(t):
+                            try:
+                                h, m, s = map(int, t.split(':'))
+                                return h * 3600 + m * 60 + s
+                            except: return 0
+
+                        is_duplicate = any(
+                            m['id'] == match_id and 
+                            m['video_source'] == filename and 
+                            abs(parse_time(m['found_at']) - parse_time(actual_time_str)) < 5
+                            for m in match_details_list
+                        )
+                        
+                        if is_duplicate:
+                            continue
                         match_found = True
+
+                        match_found = True
+
+                        # Calculate Side
+                        (x, y, w, h) = rect
+                        center_x = x + w / 2
+                        if center_x < frame_width / 3:
+                            side = "Left"
+                        elif center_x < 2 * frame_width / 3:
+                            side = "Center"
+                        else:
+                            side = "Right"
 
                         conn = get_db_connection()
                         cursor = conn.cursor(dictionary=True)
                         cursor.execute("SELECT * FROM missing_persons WHERE id = %s", (match_id,))
                         person_data = cursor.fetchone()
+                        
                         if person_data:
-                            match_details_list.append(person_data)
-
+                            person_data['side'] = side
+                            person_data['video_source'] = filename
+                            person_data['found_at'] = actual_time_str
+                            person_data['last_seen_location'] = location_name 
+                            
+                            # Final check for duplicates in the session list
+                            is_dup = False
+                            for m in match_details_list:
+                                if m['id'] == match_id and m['video_source'] == filename and m['found_at'] == actual_time_str:
+                                    is_dup = True
+                                    break
+                            
+                            if not is_dup:
+                                match_details_list.append(person_data)
+                                session['match_details_list'] = match_details_list
+                                session.modified = True
+                                match_found = True
 
                             try:
                                 cursor.execute("INSERT INTO case_updates (missing_person_id, update_type, details, source, location) VALUES (%s, %s, %s, %s, %s)",
-                                               (match_id, 'Video Search', f"Match found in video: {filename}", 'Video Search', 'Video File Match'))
+                                               (match_id, 'Video Search', f"Match found at {actual_time_str} ({side} side) in {location_name}. Video: {filename}", 'Video Search', location_name))
                                 
-                                # LOGGING TO HISTORY (New)
                                 cursor.execute("INSERT INTO detection_logs (person_id, camera_source, location, latitude, longitude) VALUES (%s, %s, %s, %s, %s)",
-                                               (match_id, "Video Search", "Video File Upload", None, None))
+                                               (match_id, f"Video: {filename}", f"Detected at {actual_time_str} ({side} side) at {location_name}", None, None))
                                 
                                 conn.commit()
                             except Exception as e:
                                 print(f"Error logging video search update: {e}")
 
-
                             match_details = {
                                 'name': person_data['full_name'],
                                 'confidence': 'High (Video)',
-                                'location': 'Video File Upload',
+                                'location': f"{location_name} (Detected at {actual_time_str})",
+                                'side': side,
                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                             }
 
@@ -587,8 +662,8 @@ def video_search():
 
             cap.release()
 
-            if not match_found:
-                flash('No match found in the video.')
+        if not match_found:
+            flash('No match found in the uploaded video(s).')
 
     # Fetch 5 latest missing persons for the CCTV Tracker tab (officer only)
     persons = []
@@ -613,6 +688,29 @@ def video_search():
                            match_found=match_found, 
                            match_details_list=match_details_list,
                            persons=persons)
+
+@app.route('/clear_investigation')
+@login_required
+def clear_investigation():
+    session.pop('match_details_list', None)
+    flash('Investigation history cleared.')
+    return redirect(url_for('video_search'))
+
+def timeToSeconds(timeStr):
+    try:
+        parts = timeStr.split(':').reverse()
+        seconds = 0
+        if parts[0]: seconds += int(parts[0])
+        if parts[1]: seconds += int(parts[1]) * 60
+        if parts[2]: seconds += int(parts[2]) * 3600
+        return seconds
+    except:
+        return 0
+
+@app.route('/virtual_camera/<location>')
+@login_required
+def virtual_camera(location):
+    return render_template('virtual_camera.html', location=location)
 
 @app.route('/process_frame', methods=['POST'])
 @login_required
