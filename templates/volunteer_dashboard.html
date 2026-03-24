@@ -2,92 +2,199 @@
 
 {% block content %}
 <div class="min-h-screen bg-gray-900 pb-12">
-    
+
+    <!-- Top Nav / Info -->
     <div class="bg-gray-800 border-b border-gray-700 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold text-white leading-tight">Volunteer Dashboard</h1>
-                    <p class="text-sm text-cyan-400 mt-1">
-                        <i class="fas fa-map-marker-alt mr-1"></i> {{ volunteer.location }}
+                    <h1 class="text-3xl font-extrabold text-white tracking-tight">Volunteer <span
+                            class="text-indigo-500">Command Center</span></h1>
+                    <p class="text-sm text-cyan-400 mt-1 flex items-center">
+                        <i class="fas fa-satellite-dish mr-2 animate-pulse"></i> Monitoring: <span
+                            class="text-white ml-1 font-mono uppercase">{{ volunteer.location or 'Global' }}</span>
                     </p>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-300 font-medium hidden sm:block">Welcome, {{ volunteer.full_name }}</span>
+                <div class="flex items-center space-x-6">
+                    <div class="hidden md:block text-right">
+                        <p class="text-xs text-gray-500 uppercase font-bold tracking-widest">Active Duty</p>
+                        <p class="text-white font-bold">{{ volunteer.full_name }}</p>
+                    </div>
                     <a href="{{ url_for('volunteer_logout') }}"
-                        class="px-4 py-2 border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors text-sm font-bold">
-                        Logout
+                        class="px-5 py-2.5 bg-red-500/10 border border-red-500/50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all text-sm font-bold shadow-lg shadow-red-500/20">
+                        Sign Out
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        
-        <div class="bg-indigo-900/30 border border-indigo-500/30 rounded-xl p-6 mb-8 flex items-start space-x-4">
-            <div class="bg-indigo-500/20 p-3 rounded-lg">
-                <i class="fas fa-search text-indigo-400 text-xl"></i>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold text-white">Active Alerts in Your Network</h3>
-                <p class="text-gray-400 mt-1">There are <span class="text-white font-bold">{{ cases|length }}</span>
-                    active missing person cases that need your attention. Please review the details below and report any
-                    sightings.</p>
-            </div>
-        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {% for case in cases %}
-            <div
-                class="bg-gray-800 rounded-xl overflow-hidden shadow-lg border border-gray-700 hover:border-gray-600 transition-all group">
-                <div class="relative h-64 overflow-hidden">
-                    <img src="{{ url_for('static', filename='uploads/' + case.photo_path) }}" alt="{{ case.full_name }}"
-                        class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500">
-                    <div class="absolute top-0 right-0 p-2">
-                        <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded shadow-sm">MISSING</span>
+            <!-- Left Column: Quick Actions & Tips -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- User Profile Card -->
+                <div class="bg-gray-800/50 border border-gray-700 rounded-2xl p-6 backdrop-blur-sm">
+                    <div class="flex items-center space-x-4 mb-6">
+                        <div
+                            class="h-12 w-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                            <i class="fas fa-user-shield text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-indigo-400 font-bold uppercase tracking-tighter">Verified Volunteer
+                            </p>
+                            <p class="text-white font-bold truncate">{{ volunteer.full_name }}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-black/20 rounded-xl p-3 border border-white/5">
+                            <p class="text-[10px] text-gray-500 uppercase font-bold">Primary Location</p>
+                            <p class="text-sm text-gray-300 font-semibold">{{ volunteer.location or 'Not Set' }}</p>
+                        </div>
+                        <div class="bg-black/20 rounded-xl p-3 border border-white/5">
+                            <p class="text-[10px] text-gray-500 uppercase font-bold">Contact Channel</p>
+                            <p class="text-sm text-gray-300 font-semibold">{{ volunteer.phone or 'No Phone' }}</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="p-5">
-                    <h3 class="text-xl font-bold text-white mb-1">{{ case.full_name }}</h3>
-                    <p class="text-gray-400 text-sm mb-4">{{ case.gender }}, {{ case.age }} years old</p>
-
-                    <div class="space-y-2 mb-4">
-                        <div class="flex items-start text-sm text-gray-300">
-                            <i class="fas fa-map-marker-alt text-red-400 mt-1 mr-2 w-4"></i>
-                            <span class="line-clamp-1">{{ case.last_seen_location }}</span>
-                        </div>
-                        <div class="flex items-start text-sm text-gray-300">
-                            <i class="far fa-clock text-indigo-400 mt-1 mr-2 w-4"></i>
-                            <span>{{ case.last_seen_date }}</span>
-                        </div>
+                <!-- Quick Tools -->
+                <div
+                    class="bg-indigo-600 rounded-2xl p-6 shadow-xl shadow-indigo-500/20 relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 opacity-10 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-tools text-8xl"></i>
                     </div>
-
-                    <div class="grid grid-cols-2 gap-3 mt-4">
-                        <a href="{{ url_for('case_detail', person_id=case.id) }}"
-                            class="flex justify-center items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg transition-colors">
-                            View Details
+                    <h3 class="text-white font-bold mb-4 flex items-center gap-2">
+                        <i class="fas fa-bolt"></i> Quick Tools
+                    </h3>
+                    <div class="space-y-2">
+                        <a href="/report"
+                            class="flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-white text-sm font-bold transition-all border border-white/10">
+                            <i class="fas fa-eye"></i> Report Sighting
                         </a>
-                        <a href="{{ url_for('download_poster', ticket_id=case.ticket_id) }}"
-                            class="flex justify-center items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-colors">
-                            <i class="fas fa-print mr-1"></i> Poster
+                        <a href="/map_dashboard"
+                            class="flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-white text-sm font-bold transition-all border border-white/10">
+                            <i class="fas fa-map-marked-alt"></i> Area Scan
                         </a>
                     </div>
                 </div>
-            </div>
-            {% else %}
-            <div class="col-span-full text-center py-12">
-                <div class="inline-block p-6 rounded-full bg-gray-800 mb-4">
-                    <i class="fas fa-check-circle text-4xl text-green-500"></i>
+
+                <!-- Safety Protocol -->
+                <div class="bg-gray-800 border border-yellow-500/20 rounded-2xl p-6">
+                    <h3 class="text-yellow-500 font-bold mb-3 flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle"></i> Safety First
+                    </h3>
+                    <ul class="text-xs text-gray-400 space-y-3">
+                        <li class="flex gap-2">
+                            <span class="text-yellow-500/50">01</span>
+                            Do not attempt to detain individuals yourself.
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-yellow-500/50">02</span>
+                            Maintain a safe distance and observe details.
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="text-yellow-500/50">03</span>
+                            Contact local police immediately if you see a match.
+                        </li>
+                    </ul>
                 </div>
-                <h3 class="text-xl font-bold text-white">All Clear</h3>
-                <p class="text-gray-400 mt-2">No active missing person reports at the moment.</p>
             </div>
-            {% endfor %}
+
+            <!-- Right Column: Case Alerts -->
+            <div class="lg:col-span-3 space-y-8">
+
+                <!-- Nearby Cases Alert -->
+                <div class="relative">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-3">
+                            <span class="flex h-3 w-3 relative">
+                                <span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                            </span>
+                            High Priority: <span class="text-indigo-400">Near You</span>
+                        </h2>
+                        <span class="text-xs font-mono text-gray-500">{{ nearby_cases|length }} ACTIVE</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% for case in nearby_cases %}
+                        <div
+                            class="bg-gray-800 rounded-2xl overflow-hidden border border-indigo-500/30 hover:border-indigo-500 transition-all shadow-2xl">
+                            <div class="relative h-56 flex">
+                                <img src="{{ url_for('static', filename='uploads/' + case.photo_path) }}"
+                                    class="w-full h-full object-cover">
+                                <div class="absolute top-4 left-4">
+                                    <span
+                                        class="px-3 py-1 bg-indigo-500 text-white text-[10px] font-black rounded-lg uppercase shadow-xl border border-white/20">Nearby</span>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <h3 class="text-xl font-bold text-white mb-1">{{ case.full_name }}</h3>
+                                <p class="text-xs text-gray-500 mb-4 font-mono uppercase tracking-widest">Last seen: {{
+                                    case.last_seen_date }}</p>
+                                <div class="flex items-center justify-between">
+                                    <a href="{{ url_for('case_detail', person_id=case.id) }}"
+                                        class="text-indigo-400 hover:text-indigo-300 text-sm font-bold flex items-center gap-1 transition-all">
+                                        View Case Details <i class="fas fa-chevron-right text-[10px]"></i>
+                                    </a>
+                                    <a href="{{ url_for('download_poster', ticket_id=case.ticket_id) }}"
+                                        class="p-2 bg-gray-700/50 text-white rounded-lg hover:bg-indigo-600 transition-all">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if not nearby_cases %}
+                        <div
+                            class="col-span-full bg-gray-800/30 border border-dashed border-gray-700 py-12 rounded-2xl text-center">
+                            <i class="fas fa-shield-alt text-4xl text-gray-700 mb-3"></i>
+                            <p class="text-gray-500 text-sm font-bold">No High-Priority cases in your immediate area.
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Global Network Alerts -->
+                <div>
+                    <div class="flex items-center justify-between mb-4 mt-12 border-b border-gray-800 pb-4">
+                        <h2 class="text-xl font-bold text-white flex items-center gap-3">
+                            <i class="fas fa-globe text-gray-600"></i> Other Active Reports
+                        </h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {% for case in other_cases %}
+                        <div
+                            class="bg-gray-800/30 rounded-2xl overflow-hidden border border-gray-700 hover:bg-gray-800 transition-all group">
+                            <div class="relative h-48 opacity-80 group-hover:opacity-100 transition-opacity">
+                                <img src="{{ url_for('static', filename='uploads/' + case.photo_path) }}"
+                                    class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-5">
+                                <h3 class="text-lg font-bold text-white leading-tight mb-2">{{ case.full_name }}</h3>
+                                <div class="space-y-1 mb-4">
+                                    <div class="flex items-center text-[10px] text-gray-500 font-bold uppercase gap-2">
+                                        <i class="fas fa-map-marker-alt text-indigo-500"></i> {{ case.last_seen_location
+                                        or 'Unknown' }}
+                                    </div>
+                                </div>
+                                <a href="{{ url_for('case_detail', person_id=case.id) }}"
+                                    class="block w-full text-center py-2 bg-gray-700 text-white text-xs font-bold rounded-xl hover:bg-indigo-600 transition-all">
+                                    Investigate
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 </div>

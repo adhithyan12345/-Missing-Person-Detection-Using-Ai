@@ -141,11 +141,11 @@
                                 class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent block mb-3">
                                 Upload Your Photo
                             </span>
-                            <input id="photo" name="photo" type="file" class="sr-only" required accept="image/*"
-                                onchange="this.form.submit()">
+                            <input id="photo" name="photo" type="file" class="sr-only" required accept="image/*">
                         </label>
 
                         <p class="text-gray-600 text-lg mb-2">Drag and drop or click to browse</p>
+                        <p id="search-fname" class="text-indigo-600 font-bold text-lg hidden mb-2"></p>
                         <p class="text-gray-500 text-sm">PNG, JPG, GIF • Maximum 10MB</p>
                         <div class="mt-6 flex items-center justify-center space-x-2 text-indigo-600">
                             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -281,6 +281,23 @@
             {% endif %}
         </div>
     </div>
+    <script>
+        // Search Photo Filename display
+        document.getElementById('photo').addEventListener('change', function () {
+            const d = document.getElementById('search-fname');
+            if (this.files && this.files.length > 0) {
+                d.textContent = '🖼️ ' + this.files[0].name;
+                d.classList.remove('hidden');
+
+                // Submit after a short delay to show the filename
+                setTimeout(() => {
+                    this.form.submit();
+                }, 400);
+            } else {
+                d.classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 
 </html>

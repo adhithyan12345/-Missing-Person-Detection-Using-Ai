@@ -50,12 +50,14 @@ notification_manager = NotificationManager(app, mail)
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 class User(UserMixin):
-    def __init__(self, id, full_name, email, password_hash, role='user'):
+    def __init__(self, id, full_name, email, password_hash, role='user', phone=None, location=None):
         self.id = id
         self.full_name = full_name
         self.email = email
         self.password_hash = password_hash
         self.role = role
+        self.phone = phone
+        self.location = location
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -67,7 +69,15 @@ def load_user(user_id):
         cursor.close()
         conn.close()
         if user_data:
-            return User(user_data['id'], user_data['full_name'], user_data['email'], user_data['password_hash'], user_data.get('role', 'user'))
+            return User(
+                user_data['id'], 
+                user_data['full_name'], 
+                user_data['email'], 
+                user_data['password_hash'], 
+                user_data.get('role', 'user'),
+                user_data.get('phone'),
+                user_data.get('location')
+            )
     except Exception as e:
         print(f"Error loading user: {e}")
     return None
@@ -580,7 +590,29 @@ def video_search():
             if not match_found:
                 flash('No match found in the video.')
 
-    return render_template('video_search.html', match_found=match_found, match_details_list=match_details_list)
+    # Fetch 5 latest missing persons for the CCTV Tracker tab (officer only)
+    persons = []
+    if current_user.is_authenticated and current_user.role == 'officer':
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor(dictionary=True)
+            cur.execute("""
+                SELECT id, ticket_id, full_name 
+                FROM missing_persons 
+                WHERE status='Missing' 
+                ORDER BY created_at DESC 
+                LIMIT 5
+            """)
+            persons = cur.fetchall()
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error fetching persons for video_search: {e}")
+
+    return render_template('video_search.html', 
+                           match_found=match_found, 
+                           match_details_list=match_details_list,
+                           persons=persons)
 
 @app.route('/process_frame', methods=['POST'])
 @login_required
@@ -1032,7 +1064,7 @@ def api_map_data():
         cursor = conn.cursor(dictionary=True)
 
 
-        cursor.execute("SELECT id, full_name, status, latitude, longitude, photo_path, description FROM missing_persons WHERE latitude IS NOT NULL AND longitude IS NOT NULL")
+        cursor.execute("SELECT id, full_name, status, latitude, longitude, photo_path, last_seen_location, description FROM missing_persons WHERE latitude IS NOT NULL AND longitude IS NOT NULL")
         persons = cursor.fetchall()
 
 
@@ -1099,7 +1131,15 @@ def login():
             conn.close()
 
             if user_data and check_password_hash(user_data['password_hash'], password):
-                user = User(user_data['id'], user_data['full_name'], user_data['email'], user_data['password_hash'], user_data.get('role', 'user'))
+                user = User(
+                    user_data['id'], 
+                    user_data['full_name'], 
+                    user_data['email'], 
+                    user_data['password_hash'], 
+                    user_data.get('role', 'user'),
+                    user_data.get('phone'),
+                    user_data.get('location')
+                )
                 login_user(user, remember=request.form.get('remember-me'))
                 next_page = request.args.get('next')
                 return redirect(next_page or url_for('index'))
@@ -1509,7 +1549,7 @@ from functools import wraps
 def volunteer_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'volunteer_id' not in session:
+        if not current_user.is_authenticated or current_user.role != 'volunteer':
             flash('Please log in as a volunteer to access this page.', 'warning')
             return redirect(url_for('volunteer_login'))
         return f(*args, **kwargs)
@@ -1517,84 +1557,425 @@ def volunteer_required(f):
 
 @app.route('/volunteer/signup', methods=['GET', 'POST'])
 def volunteer_signup():
+    if current_user.is_authenticated:
+        return redirect(url_for('volunteer_dashboard'))
+
     if request.method == 'POST':
         full_name = request.form['full_name']
-        email = request.form['email']
+        email = request.form['email'].strip().lower()
         password = request.form['password']
         phone = request.form.get('phone')
         location = request.form.get('location')
 
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+            if cursor.fetchone():
+                flash('Email already registered.', 'error')
+                cursor.close()
+                conn.close()
+                return redirect(url_for('volunteer_signup'))
 
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM volunteers WHERE email = %s", (email,))
-        if cursor.fetchone():
-            flash('Email already registered.')
+            hashed_pw = generate_password_hash(password)
+            cursor.execute("INSERT INTO users (full_name, email, password_hash, role, phone, location) VALUES (%s, %s, %s, %s, %s, %s)",
+                           (full_name, email, hashed_pw, 'volunteer', phone, location))
+            conn.commit()
+            
+            # Auto login
+            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+            user_data = cursor.fetchone()
+            cursor.close()
+            conn.close()
+
+            user = User(
+                user_data['id'], 
+                user_data['full_name'], 
+                user_data['email'], 
+                user_data['password_hash'], 
+                'volunteer',
+                user_data.get('phone'),
+                user_data.get('location')
+            )
+            login_user(user)
+            
+            flash('Registration successful! Welcome to the network.')
+            return redirect(url_for('volunteer_dashboard'))
+        except Exception as e:
+            flash(f"Signup error: {e}", 'error')
             return redirect(url_for('volunteer_signup'))
-
-        hashed_pw = generate_password_hash(password)
-        cursor.execute("INSERT INTO volunteers (full_name, email, password_hash, phone, location) VALUES (%s, %s, %s, %s, %s)",
-                       (full_name, email, hashed_pw, phone, location))
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        flash('Registration successful! Please login.')
-        return redirect(url_for('volunteer_login'))
 
     return render_template('volunteer_signup.html')
 
 @app.route('/volunteer/login', methods=['GET', 'POST'])
 def volunteer_login():
+    if current_user.is_authenticated:
+        if current_user.role == 'volunteer':
+            return redirect(url_for('volunteer_dashboard'))
+        return redirect(url_for('index'))
+
     if request.method == 'POST':
-        email = request.form['email']
+        email = request.form['email'].strip().lower()
         password = request.form['password']
 
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM volunteers WHERE email = %s", (email,))
-        volunteer = cursor.fetchone()
-        cursor.close()
-        conn.close()
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM users WHERE email = %s AND role = 'volunteer'", (email,))
+            user_data = cursor.fetchone()
+            cursor.close()
+            conn.close()
 
-        if volunteer and check_password_hash(volunteer['password_hash'], password):
-            session['volunteer_id'] = volunteer['id']
-            session['volunteer_name'] = volunteer['full_name']
-            flash(f"Welcome back, {volunteer['full_name']}!")
-            return redirect(url_for('volunteer_dashboard'))
-        else:
-            flash('Invalid email or password.')
+            if user_data and check_password_hash(user_data['password_hash'], password):
+                user = User(
+                    user_data['id'], 
+                    user_data['full_name'], 
+                    user_data['email'], 
+                    user_data['password_hash'], 
+                    'volunteer',
+                    user_data.get('phone'),
+                    user_data.get('location')
+                )
+                login_user(user)
+                flash(f"Welcome back, {user.full_name}!")
+                return redirect(url_for('volunteer_dashboard'))
+            else:
+                flash('Invalid email or password for volunteer access.', 'error')
+        except Exception as e:
+            flash(f"Login error: {e}", 'error')
 
     return render_template('volunteer_login.html')
 
 @app.route('/volunteer/dashboard')
 @volunteer_required
 def volunteer_dashboard():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
 
+        volunteer_location = current_user.location or ""
+        
+        # All active cases
+        cursor.execute("SELECT * FROM missing_persons WHERE status = 'Missing' ORDER BY created_at DESC")
+        all_cases = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM missing_persons WHERE status = 'Missing' ORDER BY created_at DESC")
-    cases = cursor.fetchall()
+        # Nearby cases: Simple string match for location
+        nearby_cases = [c for c in all_cases if volunteer_location.lower() in (c['last_seen_location'] or "").lower()]
+        other_cases = [c for c in all_cases if c not in nearby_cases]
 
+        cursor.close()
+        conn.close()
 
-    cursor.execute("SELECT * FROM volunteers WHERE id = %s", (session['volunteer_id'],))
-    volunteer = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
-
-    return render_template('volunteer_dashboard.html', cases=cases, volunteer=volunteer)
+        return render_template('volunteer_dashboard.html', 
+                               nearby_cases=nearby_cases, 
+                               other_cases=other_cases,
+                               volunteer=current_user)
+    except Exception as e:
+        flash(f"Error loading dashboard: {e}", 'error')
+        return redirect(url_for('index'))
 
 @app.route('/volunteer/logout')
 def volunteer_logout():
-    session.pop('volunteer_id', None)
-    session.pop('volunteer_name', None)
+    logout_user()
     flash('Logged out successfully.')
     return redirect(url_for('index'))
 
+# ────────────────────────────────────────────────────────────────
+#  MULTI-LAYER CCTV TRACKING SYSTEM
+# ────────────────────────────────────────────────────────────────
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import uuid
+
+# In-memory store keyed by session_id for live status polling
+TRACKING_SESSIONS = {}   # {session_id: {'status': ..., 'progress': 0-100, 'results': [], 'error': None}}
+
+CCTV_UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'cctv_uploads')
+os.makedirs(CCTV_UPLOAD_FOLDER, exist_ok=True)
+
+ALLOWED_VIDEO_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv', 'webm', 'flv', 'wmv'}
+
+def allowed_video(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_VIDEO_EXTENSIONS
+
+
+def process_video_for_tracking(video_path, target_encoding, layer_number, camera_name, case_id, session_id):
+    """
+    Opens a video, samples 1 frame per second, looks for the target face.
+    Returns a result dict on first match, or None.
+    """
+    result = None
+    try:
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            print(f"[TRACKER] Cannot open video: {video_path}")
+            return None
+
+        fps = cap.get(cv2.CAP_PROP_FPS) or 25.0
+        frame_interval = max(1, int(fps))   # Sample 1 frame per second
+        frame_idx = 0
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            if frame_idx % frame_interval == 0:
+                from utils.ai_engine import get_all_face_encodings
+                faces = get_all_face_encodings(frame)
+
+                for encoding, _ in faces:
+                    dist = float(np.linalg.norm(target_encoding - encoding))
+                    if dist <= 1.1:   # match threshold
+                        # Convert frame index to HH:MM:SS
+                        seconds = int(frame_idx / fps)
+                        ts = f"{seconds // 3600:02d}:{(seconds % 3600) // 60:02d}:{seconds % 60:02d}"
+                        confidence = round(max(0.0, 1.0 - dist / 1.1) * 100, 2)
+
+                        result = {
+                            'layer_number': layer_number,
+                            'camera_name': camera_name,
+                            'timestamp_found': ts,
+                            'confidence': confidence,
+                            'video_path': os.path.basename(video_path)
+                        }
+
+                        # Persist to DB
+                        try:
+                            conn = get_db_connection()
+                            cur = conn.cursor()
+                            cur.execute(
+                                """INSERT INTO tracking_results
+                                   (session_id, case_id, layer_number, camera_name, timestamp_found, confidence, video_path)
+                                   VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                                (session_id, case_id, layer_number, camera_name, ts, confidence, os.path.basename(video_path))
+                            )
+                            conn.commit()
+                            cur.close()
+                            conn.close()
+                        except Exception as db_err:
+                            print(f"[TRACKER] DB insert error: {db_err}")
+
+                        cap.release()
+                        return result
+
+            frame_idx += 1
+
+        cap.release()
+    except Exception as e:
+        print(f"[TRACKER] Error processing {video_path}: {e}")
+
+    return result
+
+
+def run_tracking_session(session_id, layers_data, target_encoding, case_id):
+    """
+    Processes layers sequentially, videos within each layer in parallel.
+    Updates TRACKING_SESSIONS[session_id] as it goes.
+    layers_data: [ {'layer': 1, 'videos': [(path, camera_name), ...]}, ... ]
+    """
+    TRACKING_SESSIONS[session_id]['status'] = 'running'
+    total_layers = len(layers_data)
+    all_results = []
+
+    try:
+        for layer_idx, layer in enumerate(layers_data):
+            layer_num = layer['layer']
+            videos = layer['videos']
+
+            TRACKING_SESSIONS[session_id]['status'] = f'Processing Layer {layer_num}…'
+
+            futures_map = {}
+            with ThreadPoolExecutor(max_workers=min(4, len(videos))) as executor:
+                for vpath, cname in videos:
+                    f = executor.submit(
+                        process_video_for_tracking,
+                        vpath, target_encoding, layer_num, cname, case_id, session_id
+                    )
+                    futures_map[f] = cname
+
+                for f in as_completed(futures_map):
+                    res = f.result()
+                    if res:
+                        all_results.append(res)
+
+            # Progress after each layer
+            progress = int(((layer_idx + 1) / total_layers) * 100)
+            TRACKING_SESSIONS[session_id]['progress'] = progress
+            TRACKING_SESSIONS[session_id]['results'] = sorted(all_results, key=lambda x: x['layer_number'])
+
+        TRACKING_SESSIONS[session_id]['status'] = 'complete'
+        TRACKING_SESSIONS[session_id]['progress'] = 100
+        TRACKING_SESSIONS[session_id]['results'] = sorted(all_results, key=lambda x: x['layer_number'])
+
+    except Exception as e:
+        TRACKING_SESSIONS[session_id]['status'] = 'error'
+        TRACKING_SESSIONS[session_id]['error'] = str(e)
+        print(f"[TRACKER] Session {session_id} failed: {e}")
+
+
+# ── Routes ──────────────────────────────────────────────────────
+
+# Redundant route removed (Integrated into /video_search)
+
+
+@app.route('/api/cctv/start_tracking', methods=['POST'])
+@login_required
+def start_cctv_tracking():
+    if current_user.role != 'officer':
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    # ── 1. Get target encoding ──────────────────────────────────
+    target_encoding = None
+    case_id = None
+
+    target_type = request.form.get('target_type', 'db')
+
+    if target_type == 'db':
+        person_id = request.form.get('person_id')
+        if not person_id:
+            return jsonify({'error': 'No person ID provided'}), 400
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor(dictionary=True)
+            cur.execute("SELECT face_encoding, id FROM missing_persons WHERE id=%s", (person_id,))
+            row = cur.fetchone()
+            cur.close()
+            conn.close()
+            if not row or not row['face_encoding']:
+                return jsonify({'error': 'No face encoding found for that person'}), 400
+            target_encoding = pickle.loads(row['face_encoding'])
+            target_encoding = target_encoding / np.linalg.norm(target_encoding)
+            case_id = row['id']
+        except Exception as e:
+            return jsonify({'error': f'DB error: {e}'}), 500
+
+    elif target_type == 'upload':
+        if 'target_photo' not in request.files:
+            return jsonify({'error': 'No target photo uploaded'}), 400
+        f = request.files['target_photo']
+        if f.filename == '':
+            return jsonify({'error': 'Empty filename'}), 400
+        fname = secure_filename(f.filename)
+        fpath = os.path.join(CCTV_UPLOAD_FOLDER, f'target_{uuid.uuid4().hex}_{fname}')
+        f.save(fpath)
+        from utils.ai_engine import get_face_encoding
+        target_encoding = get_face_encoding(fpath)
+        if target_encoding is None:
+            return jsonify({'error': 'No face detected in the uploaded target photo'}), 400
+    else:
+        return jsonify({'error': 'Invalid target type'}), 400
+
+    # ── 2. Parse layer / video data ─────────────────────────────
+    # Form field naming convention:
+    #   layer_count          – total number of layers
+    #   layer_<N>_video_<M>  – video file for layer N, camera M
+    #   layer_<N>_name_<M>   – camera name for layer N, camera M (optional)
+
+    layer_count = int(request.form.get('layer_count', 0))
+    if layer_count == 0:
+        return jsonify({'error': 'No layers provided'}), 400
+
+    layers_data = []
+
+    for ln in range(1, layer_count + 1):
+        cameras = []
+        cam_idx = 1
+        while True:
+            key = f'layer_{ln}_video_{cam_idx}'
+            name_key = f'layer_{ln}_name_{cam_idx}'
+            if key not in request.files:
+                break
+            vfile = request.files[key]
+            if vfile.filename == '':
+                cam_idx += 1
+                continue
+            if not allowed_video(vfile.filename):
+                cam_idx += 1
+                continue
+
+            # Save video
+            safe_name = secure_filename(vfile.filename)
+            dest = os.path.join(CCTV_UPLOAD_FOLDER, f'L{ln}_C{cam_idx}_{uuid.uuid4().hex[:6]}_{safe_name}')
+            vfile.save(dest)
+
+            cam_name = request.form.get(name_key, f'Camera_{chr(64 + (ln - 1) * 10 + cam_idx)}')
+            cameras.append((dest, cam_name))
+            cam_idx += 1
+
+            if cam_idx > 10:
+                break
+
+        if cameras:
+            layers_data.append({'layer': ln, 'videos': cameras})
+
+    if not layers_data:
+        return jsonify({'error': 'No valid video files uploaded'}), 400
+
+    # ── 3. Launch async tracking ────────────────────────────────
+    session_id = uuid.uuid4().hex
+    TRACKING_SESSIONS[session_id] = {
+        'status': 'starting',
+        'progress': 0,
+        'results': [],
+        'error': None
+    }
+
+    t = threading.Thread(
+        target=run_tracking_session,
+        args=(session_id, layers_data, target_encoding, case_id),
+        daemon=True
+    )
+    t.start()
+
+    return jsonify({'session_id': session_id}), 200
+
+
+@app.route('/api/cctv/tracking_status/<session_id>')
+@login_required
+def cctv_tracking_status(session_id):
+    if session_id not in TRACKING_SESSIONS:
+        return jsonify({'error': 'Session not found'}), 404
+
+    data = TRACKING_SESSIONS[session_id]
+
+    # Fetch person info if first result has a case attached
+    person_info = None
+    if data['results']:
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor(dictionary=True)
+            cur.execute(
+                "SELECT id, full_name, photo_path, ticket_id FROM tracking_results tr "
+                "JOIN missing_persons mp ON tr.case_id = mp.id "
+                "WHERE tr.session_id=%s AND tr.case_id IS NOT NULL LIMIT 1",
+                (session_id,)
+            )
+            row = cur.fetchone()
+            cur.close()
+            conn.close()
+            if row:
+                person_info = {
+                    'id': row['id'],
+                    'full_name': row['full_name'],
+                    'photo_path': row['photo_path'],
+                    'ticket_id': row['ticket_id']
+                }
+        except Exception:
+            pass
+
+    return jsonify({
+        'status': data['status'],
+        'progress': data['progress'],
+        'results': data['results'],
+        'person_info': person_info,
+        'error': data['error']
+    })
+
+
+# ────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
 
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     print("Starting server...")
     app.run(debug=True, host='0.0.0.0')
+

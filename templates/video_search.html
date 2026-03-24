@@ -7,6 +7,7 @@
     <title>Video Search - FindThem</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -84,219 +85,935 @@
             background: rgba(255, 255, 255, 0.3);
             animation: float 6s infinite ease-in-out;
         }
+
+        /* ── Tab styles ─────────────────────────────── */
+        .tab-btn {
+            padding: 0.65rem 1.75rem;
+            border-radius: 0.6rem;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all 0.22s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
+        }
+
+        .tab-btn.inactive {
+            background: rgba(255, 255, 255, 0.55);
+            color: #4b5563;
+        }
+
+        .tab-btn.inactive:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        /* ── CCTV Tracker dark panel ────────────────── */
+        :root {
+            --neon: #00e5ff;
+            --neon2: #7c3aed;
+        }
+
+        .tracker-panel {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            color: #e2e8f0;
+        }
+
+        .t-glass {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(0, 229, 255, 0.18);
+            border-radius: 0.875rem;
+            padding: 1.4rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .neon-title {
+            background: linear-gradient(90deg, #00e5ff, #7c3aed, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .layer-card {
+            background: rgba(30, 27, 75, 0.7);
+            border: 1px solid rgba(124, 58, 237, 0.35);
+            border-radius: 0.875rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .layer-card:hover {
+            border-color: rgba(0, 229, 255, 0.5);
+        }
+
+        .layer-header {
+            background: linear-gradient(90deg, rgba(124, 58, 237, 0.2), rgba(0, 229, 255, 0.1));
+            border-radius: 0.875rem 0.875rem 0 0;
+            padding: 0.75rem 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cam-row {
+            display: grid;
+            grid-template-columns: 1fr 1.8fr auto;
+            gap: 0.6rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-neon {
+            background: linear-gradient(135deg, #00e5ff22, #7c3aed33);
+            border: 1px solid var(--neon);
+            color: var(--neon);
+            padding: 0.4rem 1rem;
+            border-radius: 0.45rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-neon:hover {
+            background: rgba(0, 229, 255, 0.14);
+            box-shadow: 0 0 12px rgba(0, 229, 255, 0.35);
+        }
+
+        .btn-neon:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-danger-sm {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            padding: 0.28rem 0.65rem;
+            border-radius: 0.4rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .btn-danger-sm:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-start-tracker {
+            background: linear-gradient(135deg, #00e5ff, #06b6d4);
+            color: #0f172a;
+            border: none;
+            padding: 0.7rem 2.2rem;
+            border-radius: 0.55rem;
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s;
+            letter-spacing: 0.03em;
+        }
+
+        .btn-start-tracker:hover {
+            box-shadow: 0 0 26px rgba(0, 229, 255, 0.55);
+            transform: translateY(-1px);
+        }
+
+        .btn-start-tracker:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .t-input {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(0, 229, 255, 0.22);
+            border-radius: 0.4rem;
+            color: #e2e8f0;
+            padding: 0.42rem 0.7rem;
+            font-size: 0.82rem;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+
+        .t-input:focus {
+            outline: none;
+            border-color: var(--neon);
+            box-shadow: 0 0 8px rgba(0, 229, 255, 0.22);
+        }
+
+        .t-input option {
+            background: #1e1b4b;
+        }
+
+        .t-label {
+            color: #94a3b8;
+            font-size: 0.74rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: block;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .progress-track {
+            height: 8px;
+            background: rgba(0, 229, 255, 0.1);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00e5ff, #7c3aed);
+            border-radius: 99px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.45);
+        }
+
+        .path-node {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(124, 58, 237, 0.1));
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 0.45rem;
+            padding: 0.38rem 0.8rem;
+            color: var(--neon);
+            font-weight: 600;
+            font-size: 0.84rem;
+            animation: fadeUp 0.4s ease;
+        }
+
+        .path-arrow {
+            color: #7c3aed;
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0 0.15rem;
+        }
+
+        .tl-table th {
+            background: rgba(124, 58, 237, 0.22);
+            color: #a5b4fc;
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.55rem 0.9rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+        }
+
+        .tl-table td {
+            padding: 0.62rem 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.82rem;
+            color: #cbd5e1;
+        }
+
+        .tl-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .tl-table tr:hover td {
+            background: rgba(0, 229, 255, 0.04);
+        }
+
+        .badge-layer {
+            background: rgba(124, 58, 237, 0.28);
+            color: #c4b5fd;
+            border-radius: 9999px;
+            padding: 0.12rem 0.65rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .badge-conf {
+            background: rgba(16, 185, 129, 0.18);
+            color: #6ee7b7;
+            border-radius: 9999px;
+            padding: 0.12rem 0.65rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .badge-ts {
+            font-family: 'Courier New', monospace;
+            color: #00e5ff;
+            font-weight: 700;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 0.45rem;
+            margin-bottom: 1rem;
+        }
+
+        .radio-opt input[type=radio] {
+            display: none;
+        }
+
+        .radio-opt label {
+            display: block;
+            text-align: center;
+            padding: 0.48rem 1rem;
+            border-radius: 0.45rem;
+            border: 1px solid rgba(0, 229, 255, 0.22);
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .radio-opt input[type=radio]:checked+label {
+            background: rgba(0, 229, 255, 0.12);
+            border-color: var(--neon);
+            color: var(--neon);
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        #tracker-processing {
+            display: none;
+        }
+
+        #tracker-results {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
-    
-    <div class="particle" style="width: 60px; height: 60px; top: 10%; left: 15%; animation-delay: 0s;"></div>
-    <div class="particle" style="width: 40px; height: 40px; top: 60%; left: 85%; animation-delay: 2s;"></div>
-    <div class="particle" style="width: 80px; height: 80px; top: 80%; left: 10%; animation-delay: 4s;"></div>
+    <div class="particle" style="width:60px;height:60px;top:10%;left:15%;animation-delay:0s;"></div>
+    <div class="particle" style="width:40px;height:40px;top:60%;left:85%;animation-delay:2s;"></div>
+    <div class="particle" style="width:80px;height:80px;top:80%;left:10%;animation-delay:4s;"></div>
 
     <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-6xl mx-auto animate-slide-in">
-            
-            <div class="text-center mb-12">
-                <div class="inline-block mb-4">
-                    <span class="text-6xl">🎬</span>
-                </div>
-                <h1 class="text-5xl font-extrabold text-white mb-4" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+
+            <!-- Header -->
+            <div class="text-center mb-10">
+                <div class="inline-block mb-4"><span class="text-6xl">🎬</span></div>
+                <h1 class="text-5xl font-extrabold text-white mb-4" style="text-shadow:2px 2px 4px rgba(0,0,0,0.2);">
                     AI Video Analysis
                 </h1>
                 <p class="text-white text-opacity-90 text-xl max-w-2xl mx-auto">
                     Upload CCTV footage or video clips. Our advanced AI scans every frame to identify missing persons.
                 </p>
-                <a href="{{ url_for('index') }}" </a>
             </div>
 
-            
+            <!-- Flash messages -->
             {% with messages = get_flashed_messages() %}
             {% if messages %}
             {% for message in messages %}
             <div class="glass-card rounded-2xl p-4 mb-8 shadow-xl border-l-4 border-indigo-500 animate-slide-in">
                 <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <svg class="h-6 w-6 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                                clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-indigo-900 font-medium">{{ message }}</p>
-                    </div>
+                    <svg class="h-6 w-6 text-indigo-500 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <p class="ml-3 text-indigo-900 font-medium">{{ message }}</p>
                 </div>
             </div>
             {% endfor %}
             {% endif %}
             {% endwith %}
 
-            
-            <div class="glass-card rounded-3xl p-10 mb-12 shadow-2xl">
-                <form action="{{ url_for('video_search') }}" method="POST" enctype="multipart/form-data" id="videoForm">
-                    <div
-                        class="upload-zone bg-gradient-to-br from-indigo-50 to-purple-50 border-3 border-dashed border-indigo-300 rounded-2xl p-20 text-center cursor-pointer">
-                        
-                        <div class="mb-6">
-                            <svg class="mx-auto h-28 w-28 text-indigo-500" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z">
-                                </path>
-                            </svg>
-                        </div>
-
-                        <label for="video" class="cursor-pointer">
-                            <span
-                                class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent block mb-3">
-                                Upload Your Video
-                            </span>
-                            <input id="video" name="video" type="file" class="sr-only" required accept="video/*">
-                        </label>
-
-                        <p class="text-gray-600 text-lg mb-2">Drag and drop or click to browse</p>
-                        <p class="text-gray-500 text-sm">MP4, AVI, MOV • Maximum 100MB</p>
-                        <div class="mt-6 flex items-center justify-center space-x-2 text-indigo-600">
-                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            <span class="text-sm font-medium">AI-Powered Frame Analysis</span>
-                        </div>
-                    </div>
-
-                    
-                    <div id="loading" class="hidden mt-8 text-center">
-                        <div class="inline-flex items-center space-x-4 bg-white px-8 py-5 rounded-2xl shadow-lg">
-                            <svg class="spinner h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                            <div class="text-left">
-                                <p class="text-gray-900 font-bold text-lg">Analyzing Video...</p>
-                                <p class="text-gray-600 text-sm">This may take a few moments</p>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+            <!-- ── Tab Switcher (officer only shows CCTV tab) ── -->
+            <div class="flex gap-3 mb-8" id="tab-switcher">
+                <button class="tab-btn active" id="tab-single" onclick="switchTab('single')">
+                    <i class="fas fa-film"></i> Single Video Search
+                </button>
+                {% if current_user.is_authenticated and current_user.role == 'officer' %}
+                <button class="tab-btn inactive" id="tab-cctv" onclick="switchTab('cctv')">
+                    <i class="fas fa-satellite-dish"></i> Multi-Layer CCTV Tracker
+                    <span
+                        style="background:rgba(0,229,255,0.2);color:#00e5ff;border-radius:9999px;padding:0.05rem 0.55rem;font-size:0.68rem;font-weight:700;margin-left:4px;">OFFICER</span>
+                </button>
+                {% endif %}
             </div>
 
-            
-            {% if match_details_list %}
-            
-            <div class="glass-card rounded-2xl p-6 mb-8 shadow-xl">
-                <div class="flex items-center justify-center space-x-4">
-                    <div class="flex-shrink-0">
+            <!-- ══════════════════════════════════════════════════ -->
+            <!--  TAB 1 – Single Video Search (original)           -->
+            <!-- ══════════════════════════════════════════════════ -->
+            <div id="panel-single">
+
+                <div class="glass-card rounded-3xl p-10 mb-12 shadow-2xl">
+                    <form action="{{ url_for('video_search') }}" method="POST" enctype="multipart/form-data"
+                        id="videoForm">
+                        <div
+                            class="upload-zone bg-gradient-to-br from-indigo-50 to-purple-50 border-3 border-dashed border-indigo-300 rounded-2xl p-20 text-center cursor-pointer">
+                            <div class="mb-6">
+                                <svg class="mx-auto h-28 w-28 text-indigo-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <label for="video" class="cursor-pointer">
+                                <span
+                                    class="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent block mb-3">Upload
+                                    Your Video</span>
+                                <input id="video" name="video" type="file" class="sr-only" required accept="video/*">
+                            </label>
+                            <p class="text-gray-600 text-lg mb-2">Drag and drop or click to browse</p>
+                            <p id="video-fname" class="text-indigo-600 font-bold text-lg hidden mb-2"></p>
+                            <p class="text-gray-500 text-sm">MP4, AVI, MOV • Maximum 100MB</p>
+                            <div class="mt-6 flex items-center justify-center space-x-2 text-indigo-600">
+                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span class="text-sm font-medium">AI-Powered Frame Analysis</span>
+                            </div>
+                        </div>
+
+                        <div id="loading" class="hidden mt-8 text-center">
+                            <div class="inline-flex items-center space-x-4 bg-white px-8 py-5 rounded-2xl shadow-lg">
+                                <svg class="spinner h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4" />
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                </svg>
+                                <div class="text-left">
+                                    <p class="text-gray-900 font-bold text-lg">Analyzing Video...</p>
+                                    <p class="text-gray-600 text-sm">This may take a few moments</p>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Results: matches -->
+                {% if match_details_list %}
+                <div class="glass-card rounded-2xl p-6 mb-8 shadow-xl">
+                    <div class="flex items-center justify-center space-x-4">
                         <div class="h-12 w-12 bg-green-500 rounded-full flex items-center justify-center">
                             <svg class="h-7 w-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd"
                                     d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd"></path>
+                                    clip-rule="evenodd" />
                             </svg>
                         </div>
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-900">{{ match_details_list|length }} Match{{ 'es' if
-                            match_details_list|length > 1 else '' }} Detected!</h3>
-                        <p class="text-gray-600">Successfully identified individuals in the video footage</p>
-                    </div>
-                </div>
-            </div>
-
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {% for match in match_details_list %}
-                <div class="glass-card rounded-2xl overflow-hidden shadow-xl card-3d">
-                    
-                    <div
-                        class="relative h-48 bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
-                        <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-2xl">
-                            <img src="{{ url_for('static', filename='uploads/' + match.photo_path) }}"
-                                alt="{{ match.full_name }}" class="w-full h-full object-cover">
-                        </div>
-                        <div class="absolute top-4 right-4">
-                            <span class="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">
-                                ✓ FOUND
-                            </span>
-                        </div>
-                    </div>
-
-                    
-                    <div class="p-6">
-                        <h3 class="text-xl font-bold text-gray-900 mb-1 text-center">{{ match.full_name }}</h3>
-                        <p class="text-gray-600 text-sm text-center mb-4">{{ match.age }} years • {{ match.gender }}</p>
-
-                        <div class="space-y-3">
-                            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                                <span class="text-xl">📍</span>
-                                <div class="flex-1">
-                                    <p class="text-xs text-gray-500 font-medium">Last Seen Location</p>
-                                    <p class="text-sm text-gray-900">{{ match.last_seen_location }}</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                                <span class="text-xl">📅</span>
-                                <div class="flex-1">
-                                    <p class="text-xs text-gray-500 font-medium">Date</p>
-                                    <p class="text-sm text-gray-900">{{ match.last_seen_date }}</p>
-                                </div>
-                            </div>
-
-                            {% if match.description %}
-                            <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                                <span class="text-xl">📝</span>
-                                <div class="flex-1">
-                                    <p class="text-xs text-gray-500 font-medium">Description</p>
-                                    <p class="text-sm text-gray-700">{{ match.description }}</p>
-                                </div>
-                            </div>
-                            {% endif %}
-
-                            <div
-                                class="flex items-center justify-between p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
-                                <span class="text-sm font-medium text-gray-700">📞 Contact</span>
-                                <a href="tel:{{ match.contact_phone }}"
-                                    class="text-indigo-600 hover:text-indigo-700 font-bold text-sm">
-                                    {{ match.contact_phone }}
-                                </a>
-                            </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900">{{ match_details_list|length }} Match{{ 'es' if
+                                match_details_list|length > 1 else '' }} Detected!</h3>
+                            <p class="text-gray-600">Successfully identified individuals in the video footage</p>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
 
-            {% elif request.method == 'POST' %}
-            
-            <div class="glass-card rounded-2xl p-12 text-center shadow-xl">
-                <div class="mb-6">
-                    <svg class="mx-auto h-20 w-20 text-yellow-500" fill="none" stroke="currentColor"
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {% for match in match_details_list %}
+                    <div class="glass-card rounded-2xl overflow-hidden shadow-xl card-3d">
+                        <div
+                            class="relative h-48 bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center">
+                            <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-2xl">
+                                <img src="{{ url_for('static', filename='uploads/' + match.photo_path) }}"
+                                    alt="{{ match.full_name }}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="absolute top-4 right-4">
+                                <span
+                                    class="px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">✓
+                                    FOUND</span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-1 text-center">{{ match.full_name }}</h3>
+                            <p class="text-gray-600 text-sm text-center mb-4">{{ match.age }} years • {{ match.gender }}
+                            </p>
+                            <div class="space-y-3">
+                                <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-xl">📍</span>
+                                    <div class="flex-1">
+                                        <p class="text-xs text-gray-500 font-medium">Last Seen Location</p>
+                                        <p class="text-sm text-gray-900">{{ match.last_seen_location }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-xl">📅</span>
+                                    <div class="flex-1">
+                                        <p class="text-xs text-gray-500 font-medium">Date</p>
+                                        <p class="text-sm text-gray-900">{{ match.last_seen_date }}</p>
+                                    </div>
+                                </div>
+                                {% if match.description %}
+                                <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                                    <span class="text-xl">📝</span>
+                                    <div class="flex-1">
+                                        <p class="text-xs text-gray-500 font-medium">Description</p>
+                                        <p class="text-sm text-gray-700">{{ match.description }}</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <div
+                                    class="flex items-center justify-between p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
+                                    <span class="text-sm font-medium text-gray-700">📞 Contact</span>
+                                    <a href="tel:{{ match.contact_phone }}"
+                                        class="text-indigo-600 hover:text-indigo-700 font-bold text-sm">{{
+                                        match.contact_phone }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% elif request.method == 'POST' %}
+                <div class="glass-card rounded-2xl p-12 text-center shadow-xl">
+                    <svg class="mx-auto h-20 w-20 text-yellow-500 mb-6" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                        </path>
+                            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">No Matches Found</h3>
+                    <p class="text-gray-600 text-lg">The video was analyzed, but no missing persons were identified in
+                        the footage.</p>
+                    <p class="text-gray-500 text-sm mt-2">Try uploading a different video or check the video quality.
+                    </p>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-900 mb-3">No Matches Found</h3>
-                <p class="text-gray-600 text-lg">The video was analyzed, but no missing persons were identified in the
-                    footage.</p>
-                <p class="text-gray-500 text-sm mt-2">Try uploading a different video or check the video quality.</p>
-            </div>
+                {% endif %}
+
+            </div><!-- end panel-single -->
+
+
+            <!-- ══════════════════════════════════════════════════ -->
+            <!--  TAB 2 – Multi-Layer CCTV Tracker (officer only)  -->
+            <!-- ══════════════════════════════════════════════════ -->
+            {% if current_user.is_authenticated and current_user.role == 'officer' %}
+            <div id="panel-cctv" style="display:none;">
+
+                <div class="tracker-panel">
+
+                    <!-- Header -->
+                    <div style="text-align:center; margin-bottom:1.8rem;">
+                        <h2 class="neon-title" style="font-size:1.9rem; font-weight:800; margin:0 0 0.35rem;">
+                            Multi-Layer CCTV Tracker</h2>
+                        <p style="color:#64748b; font-size:0.88rem;">Reconstruct a subject's travel path across
+                            road-segment camera layers</p>
+                    </div>
+
+                    <!-- Setup Form -->
+                    <div id="tracker-setup">
+                        <form id="tracker-form" enctype="multipart/form-data">
+
+                            <!-- Step 1: Target Person -->
+                            <div class="t-glass">
+                                <h3
+                                    style="color:#e2e8f0; font-size:0.98rem; font-weight:700; margin:0 0 1rem; display:flex; align-items:center; gap:0.55rem;">
+                                    <span
+                                        style="background:linear-gradient(135deg,#00e5ff,#7c3aed);width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.7rem;color:#0f172a;font-weight:800;">1</span>
+                                    Target Person
+                                </h3>
+
+                                <div class="radio-group">
+                                    <div class="radio-opt" style="flex:1;">
+                                        <input type="radio" name="target_type" id="t_db" value="db" checked
+                                            onchange="toggleTargetType()">
+                                        <label for="t_db"><i class="fas fa-database"
+                                                style="margin-right:0.35rem;"></i>From Database</label>
+                                    </div>
+                                    <div class="radio-opt" style="flex:1;">
+                                        <input type="radio" name="target_type" id="t_upload" value="upload"
+                                            onchange="toggleTargetType()">
+                                        <label for="t_upload"><i class="fas fa-upload"
+                                                style="margin-right:0.35rem;"></i>Upload Photo</label>
+                                    </div>
+                                </div>
+
+                                <div id="db-select-area">
+                                    <label class="t-label">Missing Person</label>
+                                    <select name="person_id" class="t-input">
+                                        <option value="">— Select a Missing Person —</option>
+                                        {% for p in persons %}
+                                        <option value="{{ p.id }}">{{ p.full_name }} (ID: {{ p.id }} | {{ p.ticket_id
+                                            }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div id="upload-area" style="display:none;">
+                                    <label class="t-label">Target Face Photo</label>
+                                    <input type="file" name="target_photo" accept="image/*" class="t-input"
+                                        style="padding:0.3rem;">
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Layer Builder -->
+                            <div class="t-glass">
+                                <div
+                                    style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+                                    <h3
+                                        style="color:#e2e8f0; font-size:0.98rem; font-weight:700; margin:0; display:flex; align-items:center; gap:0.55rem;">
+                                        <span
+                                            style="background:linear-gradient(135deg,#00e5ff,#7c3aed);width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.7rem;color:#0f172a;font-weight:800;">2</span>
+                                        CCTV Layers
+                                    </h3>
+                                    <button type="button" class="btn-neon" onclick="addLayer()">
+                                        <i class="fas fa-plus" style="margin-right:0.3rem;"></i>Add Layer
+                                    </button>
+                                </div>
+
+                                <div id="layers-container"></div>
+                                <p id="no-layers-msg"
+                                    style="color:#475569; text-align:center; font-size:0.82rem; padding:1rem 0;">
+                                    <i class="fas fa-layer-group"
+                                        style="font-size:1.3rem; display:block; margin-bottom:0.4rem; opacity:0.4;"></i>
+                                    Click "Add Layer" to start building your camera road network
+                                </p>
+                            </div>
+
+                            <input type="hidden" name="layer_count" id="layer-count-input" value="0">
+
+                            <!-- Launch -->
+                            <div style="text-align:center; padding-top:0.5rem;">
+                                <button type="submit" class="btn-start-tracker" id="start-btn">
+                                    <i class="fas fa-satellite-dish" style="margin-right:0.5rem;"></i>Start Tracking
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Processing -->
+                    <div id="tracker-processing" style="text-align:center; padding:2rem 0;">
+                        <div style="display:inline-flex; align-items:center; gap:0.7rem; margin-bottom:1rem;">
+                            <div id="t-spinner"
+                                style="width:18px;height:18px;border:3px solid rgba(0,229,255,0.2);border-top-color:#00e5ff;border-radius:50%;animation:spin 0.9s linear infinite;">
+                            </div>
+                            <span id="t-status"
+                                style="color:#00e5ff; font-weight:600; font-size:0.9rem;">Initializing…</span>
+                        </div>
+                        <div class="progress-track" style="max-width:480px; margin:0 auto 0.5rem;">
+                            <div class="progress-fill" id="t-progress-fill" style="width:0%;"></div>
+                        </div>
+                        <p id="t-progress-pct" style="color:#64748b; font-size:0.78rem;">0%</p>
+                    </div>
+
+                    <!-- Results -->
+                    <div id="tracker-results">
+
+                        <div id="t-person-card" style="margin-bottom:1.25rem;"></div>
+
+                        <!-- Travel Path -->
+                        <div class="t-glass" style="margin-bottom:1rem;">
+                            <p
+                                style="color:#a5b4fc; font-size:0.74rem; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 0.75rem;">
+                                <i class="fas fa-route" style="margin-right:0.35rem;"></i>Camera Travel Path
+                            </p>
+                            <div id="t-travel-path"
+                                style="display:flex; flex-wrap:wrap; align-items:center; gap:0.25rem; min-height:44px;">
+                            </div>
+                        </div>
+
+                        <!-- Timeline -->
+                        <div style="border-radius:0.875rem; overflow:hidden; border:1px solid rgba(0,229,255,0.14);">
+                            <div
+                                style="padding:0.85rem 1.2rem; background:rgba(124,58,237,0.15); border-bottom:1px solid rgba(0,229,255,0.1);">
+                                <p
+                                    style="color:#a5b4fc; font-size:0.74rem; text-transform:uppercase; letter-spacing:0.07em; margin:0;">
+                                    <i class="fas fa-clock" style="margin-right:0.35rem;"></i>Detection Timeline
+                                </p>
+                            </div>
+                            <table class="tl-table" style="width:100%; border-collapse:collapse;">
+                                <thead>
+                                    <tr>
+                                        <th>Layer</th>
+                                        <th>Camera</th>
+                                        <th>Timestamp</th>
+                                        <th>Confidence</th>
+                                        <th>File</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="t-timeline-body"></tbody>
+                            </table>
+                        </div>
+
+                        <div id="t-no-matches" style="display:none; text-align:center; padding:1.5rem;">
+                            <i class="fas fa-exclamation-circle"
+                                style="color:#f87171; font-size:1.75rem; margin-bottom:0.6rem;"></i>
+                            <p style="color:#f87171; font-weight:600;">No matches found in any layer.</p>
+                            <p style="color:#64748b; font-size:0.82rem;">Try clearer videos or a different target photo.
+                            </p>
+                        </div>
+
+                        <div style="text-align:center; margin-top:1.25rem;">
+                            <button onclick="resetTracker()" class="btn-neon">
+                                <i class="fas fa-redo" style="margin-right:0.35rem;"></i>New Session
+                            </button>
+                        </div>
+                    </div>
+
+                </div><!-- end tracker-panel -->
+            </div><!-- end panel-cctv -->
             {% endif %}
+
         </div>
     </div>
 
     <script>
+        // ── Tab switching ──────────────────────────────────────────
+        function switchTab(tab) {
+            document.getElementById('panel-single').style.display = tab === 'single' ? 'block' : 'none';
+            const cctvPanel = document.getElementById('panel-cctv');
+            if (cctvPanel) cctvPanel.style.display = tab === 'cctv' ? 'block' : 'none';
+
+            document.getElementById('tab-single').className = 'tab-btn ' + (tab === 'single' ? 'active' : 'inactive');
+            const cctvTab = document.getElementById('tab-cctv');
+            if (cctvTab) cctvTab.className = 'tab-btn ' + (tab === 'cctv' ? 'active' : 'inactive');
+        }
+
+        // Auto-switch based on URL param
+        window.onload = function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab === 'cctv') {
+                switchTab('cctv');
+            }
+        };
+
+        // ── Single video auto-submit ───────────────────────────────
         document.getElementById('video').onchange = function () {
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('videoForm').submit();
         };
+
+        // ── Layer builder ──────────────────────────────────────────
+        let layerCount = 0;
+        let currentSessionId = null;
+        let pollInterval = null;
+
+        function addLayer() {
+            layerCount++;
+            document.getElementById('layer-count-input').value = layerCount;
+            document.getElementById('no-layers-msg').style.display = 'none';
+
+            const container = document.getElementById('layers-container');
+            const div = document.createElement('div');
+            div.className = 'layer-card';
+            div.id = 'layer-' + layerCount;
+            div.innerHTML = `
+          <div class="layer-header">
+            <span style="color:#a5b4fc;font-weight:700;font-size:0.88rem;display:flex;align-items:center;gap:0.45rem;">
+              <i class="fas fa-layer-group" style="color:#00e5ff;"></i>
+              Layer ${layerCount}
+              <span style="background:rgba(0,229,255,0.1);color:#00e5ff;border-radius:9999px;padding:0.05rem 0.55rem;font-size:0.68rem;">Segment ${layerCount}</span>
+            </span>
+            <div style="display:flex;gap:0.4rem;align-items:center;">
+              <button type="button" class="btn-neon" onclick="addCamera(${layerCount})" id="add-cam-btn-${layerCount}" style="padding:0.3rem 0.8rem;">
+                <i class="fas fa-video" style="margin-right:0.3rem;"></i>Add Camera
+              </button>
+              <button type="button" class="btn-danger-sm" onclick="removeLayer(${layerCount})"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+          <div style="padding:0.85rem 1.1rem;" id="cameras-${layerCount}">
+            <p style="color:#475569;font-size:0.77rem;text-align:center;padding:0.4rem 0;" id="no-cam-${layerCount}">
+              Click "Add Camera" to attach CCTV videos
+            </p>
+          </div>`;
+            container.appendChild(div);
+        }
+
+        function removeLayer(n) {
+            const el = document.getElementById('layer-' + n);
+            if (el) el.remove();
+            if (!document.getElementById('layers-container').children.length)
+                document.getElementById('no-layers-msg').style.display = 'block';
+        }
+
+        function addCamera(ln) {
+            const cc = document.getElementById('cameras-' + ln);
+            const cnt = cc.querySelectorAll('.cam-row').length + 1;
+            if (cnt > 10) { alert('Max 10 cameras per layer.'); return; }
+            const nm = document.getElementById('no-cam-' + ln);
+            if (nm) nm.style.display = 'none';
+
+            const row = document.createElement('div');
+            row.className = 'cam-row';
+            row.id = 'cam-row-' + ln + '-' + cnt;
+            row.innerHTML = `
+          <div>
+            <label class="t-label">Camera Name</label>
+            <input type="text" name="layer_${ln}_name_${cnt}" placeholder="e.g. Cam_${String.fromCharCode(64 + cnt)}" class="t-input">
+          </div>
+          <div>
+            <label class="t-label">Video File</label>
+            <input type="file" name="layer_${ln}_video_${cnt}" accept="video/*" class="t-input" style="padding:0.28rem;" onchange="showFname(this)">
+            <p class="fname-display" style="color:#64748b;font-size:0.7rem;margin-top:0.18rem;"></p>
+          </div>
+          <div style="margin-top:1.3rem;">
+            <button type="button" class="btn-danger-sm" onclick="this.parentElement.parentElement.remove()"><i class="fas fa-times"></i></button>
+          </div>`;
+            cc.appendChild(row);
+            if (cnt >= 10) document.getElementById('add-cam-btn-' + ln).disabled = true;
+        }
+
+        function showFname(input) {
+            const d = input.parentElement.querySelector('.fname-display');
+            if (d && input.files.length) { d.textContent = '📹 ' + input.files[0].name; d.style.color = '#00e5ff'; }
+        }
+
+        // ── Target type toggle ─────────────────────────────────────
+        function toggleTargetType() {
+            const isDb = document.getElementById('t_db').checked;
+            document.getElementById('db-select-area').style.display = isDb ? 'block' : 'none';
+            document.getElementById('upload-area').style.display = isDb ? 'none' : 'block';
+        }
+
+        // ── Form submit ────────────────────────────────────────────
+        const trackerForm = document.getElementById('tracker-form');
+        if (trackerForm) {
+            trackerForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                if (layerCount === 0) { alert('Please add at least one layer with a camera video.'); return; }
+
+                document.getElementById('start-btn').disabled = true;
+                document.getElementById('tracker-setup').style.display = 'none';
+                document.getElementById('tracker-processing').style.display = 'block';
+                document.getElementById('tracker-results').style.display = 'none';
+                setProgress(0, 'Uploading videos…');
+
+                try {
+                    const resp = await fetch('/api/cctv/start_tracking', { method: 'POST', body: new FormData(this) });
+                    const data = await resp.json();
+                    if (!resp.ok) { showTrackerError(data.error || 'Server error'); return; }
+                    currentSessionId = data.session_id;
+                    pollInterval = setInterval(pollStatus, 2000);
+                } catch (err) { showTrackerError('Network error: ' + err.message); }
+            });
+        }
+
+        async function pollStatus() {
+            if (!currentSessionId) return;
+            try {
+                const resp = await fetch('/api/cctv/tracking_status/' + currentSessionId);
+                const data = await resp.json();
+                setProgress(data.progress, data.status);
+                if (data.status === 'complete') { clearInterval(pollInterval); showResults(data); }
+                else if (data.status === 'error') { clearInterval(pollInterval); showTrackerError(data.error || 'Unknown error'); }
+            } catch (e) { console.error(e); }
+        }
+
+        function setProgress(pct, label) {
+            document.getElementById('t-progress-fill').style.width = pct + '%';
+            document.getElementById('t-progress-pct').textContent = pct + '%';
+            document.getElementById('t-status').textContent = label;
+        }
+
+        function showResults(data) {
+            document.getElementById('tracker-processing').style.display = 'none';
+            document.getElementById('tracker-results').style.display = 'block';
+
+            const results = data.results || [];
+
+            // Person card
+            const pc = document.getElementById('t-person-card');
+            if (data.person_info) {
+                const p = data.person_info;
+                pc.innerHTML = `<div style="display:flex;gap:1rem;align-items:center;padding:0.9rem 1.2rem;background:rgba(15,23,42,0.65);border:1px solid rgba(0,229,255,0.18);border-radius:0.75rem;margin-bottom:1rem;animation:fadeUp 0.4s ease;">
+              <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#7c3aed44,#00e5ff22);border:2px solid #00e5ff;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                ${p.photo_path ? `<img src="/static/uploads/${p.photo_path}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<i class=fas fa-user style=color:#00e5ff;font-size:1.4rem;></i>'">` : '<i class="fas fa-user" style="color:#00e5ff;font-size:1.4rem;"></i>'}
+              </div>
+              <div>
+                <p style="color:#94a3b8;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 0.2rem;">Target Person</p>
+                <h4 style="color:#e2e8f0;font-size:1.05rem;font-weight:700;margin:0 0 0.2rem;">${p.full_name}</h4>
+                <span style="color:#00e5ff;font-size:0.77rem;">ID: ${p.id} | ${p.ticket_id}</span>
+              </div>
+              <div style="margin-left:auto;">
+                <span style="background:rgba(16,185,129,0.18);color:#6ee7b7;border-radius:9999px;padding:0.15rem 0.8rem;font-size:0.75rem;font-weight:600;">
+                  ✓ ${results.length} Detection${results.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>`;
+            } else { pc.innerHTML = ''; }
+
+            if (results.length === 0) {
+                document.getElementById('t-no-matches').style.display = 'block';
+                document.getElementById('t-travel-path').innerHTML = '';
+                document.getElementById('t-timeline-body').innerHTML = '';
+                return;
+            }
+
+            document.getElementById('t-no-matches').style.display = 'none';
+
+            // Travel path
+            const path = document.getElementById('t-travel-path');
+            path.innerHTML = '';
+            results.forEach((r, i) => {
+                if (i > 0) { const a = document.createElement('span'); a.className = 'path-arrow'; a.innerHTML = '<i class="fas fa-arrow-right"></i>'; path.appendChild(a); }
+                const n = document.createElement('div'); n.className = 'path-node';
+                n.style.animationDelay = (i * 0.12) + 's';
+                n.innerHTML = `<i class="fas fa-video" style="font-size:0.7rem;"></i> ${r.camera_name} <span style="color:#7c3aed;font-size:0.7rem;">(L${r.layer_number})</span>`;
+                path.appendChild(n);
+            });
+
+            // Timeline
+            const tbody = document.getElementById('t-timeline-body');
+            tbody.innerHTML = '';
+            results.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><span class="badge-layer">Layer ${r.layer_number}</span></td>
+              <td style="color:#e2e8f0;font-weight:600;"><i class="fas fa-camera" style="color:#7c3aed;margin-right:0.35rem;font-size:0.7rem;"></i>${r.camera_name}</td>
+              <td><span class="badge-ts">${r.timestamp_found}</span></td>
+              <td><span class="badge-conf">${r.confidence.toFixed(1)}%</span></td>
+              <td style="color:#64748b;font-size:0.77rem;">${r.video_path}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function showTrackerError(msg) {
+            document.getElementById('t-spinner').style.borderTopColor = '#f87171';
+            document.getElementById('t-status').textContent = '❌ ' + msg;
+            document.getElementById('t-status').style.color = '#f87171';
+            document.getElementById('start-btn').disabled = false;
+        }
+
+        function resetTracker() {
+            layerCount = 0; currentSessionId = null;
+            if (pollInterval) clearInterval(pollInterval);
+            document.getElementById('layers-container').innerHTML = '';
+            document.getElementById('no-layers-msg').style.display = 'block';
+            document.getElementById('layer-count-input').value = 0;
+            document.getElementById('tracker-form').reset();
+            document.getElementById('tracker-setup').style.display = 'block';
+            document.getElementById('tracker-processing').style.display = 'none';
+            document.getElementById('tracker-results').style.display = 'none';
+            document.getElementById('start-btn').disabled = false;
+            toggleTargetType();
+        }
+
+        // Single Video Search Filename display
+        document.getElementById('video').addEventListener('change', function () {
+            const d = document.getElementById('video-fname');
+            if (this.files && this.files.length > 0) {
+                d.textContent = '📹 ' + this.files[0].name;
+                d.classList.remove('hidden');
+            } else {
+                d.classList.add('hidden');
+            }
+        });
     </script>
+
 </body>
 
 </html>
